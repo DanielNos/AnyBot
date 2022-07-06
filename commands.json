@@ -2,8 +2,7 @@
     "help": "Shows this list of commands.",
     "new_rg": "Creates a new role giver.",
     "del_rg": "Deletes currently edited role giver.",
-    "add_role [role] [*description]": "Adds role to currently edited role giver.",
+    "add_rg_role [role] [*description]": "Adds a role to the currently edited role giver.",
     "lock_rg": "Locks currently edited role giver and makes it visible to users.",
-    "joined [*user]": "Shows the joined date of specified user. Use without target to show your own joined date.",
-    "clear [message count]": "Deletes the specified count of messages from channel. Deletes from newest messages."
+    "clear [amount]": "Deletes up to 100 messages from current channel."
 }

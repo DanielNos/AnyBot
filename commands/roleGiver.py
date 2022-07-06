@@ -1,8 +1,9 @@
 import nextcord, sys
+from nextcord.ext import commands
+from nextcord import Message, Interaction, Role, slash_command, Guild
 sys.path.append("../NosBot")
 import emoji, dataManager
-from nextcord.ext import commands
-from nextcord import Message, Interaction, Role, slash_command
+
 
 TEST_GUILD = 794290505273966604
 
@@ -147,7 +148,7 @@ class RoleGiver(commands.Cog):
         role = role_ids[int(str(event.emoji.name)[0])-1]
         
         # Give member the role
-        guild: nextcord.Guild = await self.client.fetch_guild(event.guild_id)
+        guild: Guild = await self.client.fetch_guild(event.guild_id)
         role: Role = guild.get_role(role_ids[int(str(event.emoji.name)[0])-1])
         member = await self.client.get_guild(event.guild_id).fetch_member(event.user_id)
         await member.remove_roles(role)
