@@ -154,4 +154,6 @@ cython_debug/
 config*
 
 /old
+/data/*
 .vscode
+data/role_givers.json
