@@ -50,9 +50,9 @@ def load_role_givers():
     if not exists("./data/role_givers.json"):
         print("[ERROR] Role givers file couldn't be found. It will be created.")
         with open("./data/role_givers.json", mode="w") as file:
-            file.write("")
+            file.write("{}")
             file.close()
-        return
+        return {}
 
     # Load file
     with open("./data/role_givers.json", mode="r") as file:

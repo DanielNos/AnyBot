@@ -1,7 +1,7 @@
 import nextcord, dataManager, sys
 from nextcord.ext import commands
 sys.path.append("./commands/")
-import roleGiver, help
+import roleGiver, help, clear
 
 # Global variables
 CONFIG = dataManager.load_config()
@@ -17,6 +17,7 @@ client = commands.Bot(command_prefix="?", intents=intents)
 # Load commands
 roleGiver.load(client)
 help.load(client)
+clear.load(client)
 
 print("Commands loaded.\nLoading command data...")
 client.run(CONFIG["token"])

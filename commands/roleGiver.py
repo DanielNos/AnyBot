@@ -1,3 +1,4 @@
+from re import X
 import nextcord, sys
 from nextcord.ext import commands
 from nextcord import Message, Interaction, Role, slash_command, Guild
@@ -71,6 +72,10 @@ class RoleGiver(commands.Cog):
             await interaction.response.send_message("🚫 FAILED. Role giver doesn't have any roles! You can add roles to it using /add_rg_role [role] [*description].", ephemeral=True)
             return
         
+        # Remove guide text from role giver message
+        message: Message = await interaction.channel.fetch_message(blueprints[interaction.user.id].message_id)
+        await message.edit(content=message.content[message.content.find("\n"):])
+
         # Move role giver from blueprints dictionary to role_givers dictionary
         role_givers[rg.message_id] = blueprints.pop(interaction.user.id)
         dataManager.save_role_givers(role_givers)
