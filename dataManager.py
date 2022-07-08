@@ -1,6 +1,7 @@
-from os.path import exists
-from math import floor
 import json
+from os.path import exists
+from os import mkdir
+from math import floor
 from commands.roleGiver import RoleGiverObject
 
 def load_config():
@@ -36,25 +37,38 @@ def load_help():
 
 
 def save_role_givers(roleGivers: dict):
+    # Convert class instances to objects
     newDict = {}
 
     for rg in roleGivers:
         newDict[rg] = roleGivers[rg].to_json()
 
+    # Save
     with open("./data/role_givers.json", mode="w") as file:
         file.write(json.dumps(newDict))
         file.close()
+
 
 def load_role_givers():
     # Check if file exists
     if not exists("./data/role_givers.json"):
         print("[ERROR] Role givers file couldn't be found. It will be created.")
-        with open("./data/role_givers.json", mode="w") as file:
-            file.write("{}")
-            file.close()
+        if not exists("./data/"):
+            mkdir("./data/")
+            with open("./data/role_givers.json", mode="w") as file:
+                file.write("{}")
+                file.close()
         return {}
 
     # Load file
+    with open("./data/role_givers.json", mode="r") as file:
+        if file.read() == "":
+            print("[INFO] No role givers from previous session found.")
+            print("Role giver data loaded.")
+            file.close()
+            return {}
+        file.close()
+    
     with open("./data/role_givers.json", mode="r") as file:
         dict = json.load(file)
         file.close()
@@ -74,3 +88,8 @@ def load_role_givers():
     print("Role giver data loaded.")
 
     return newDict
+
+
+def load_test_guilds():
+    config = json.load(open("./config.json", encoding="utf-8"))
+    return config["test_guilds"]

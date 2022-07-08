@@ -1,13 +1,10 @@
-from ast import expr_context
-from re import X
 import nextcord, sys
 from nextcord.ext import commands
-from nextcord import Message, Interaction, Role, slash_command, Guild
+from nextcord import Message, Interaction, RawMessageDeleteEvent, Role, slash_command, Guild
 sys.path.append("../NosBot")
 import emoji, dataManager
 
-
-TEST_GUILD = 794290505273966604
+TEST_GUILDS = []
 
 blueprints = {}
 role_givers = {}
@@ -34,11 +31,12 @@ class RoleGiver(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        global role_givers
+        global role_givers, TEST_GUILDS
         role_givers = dataManager.load_role_givers()
+        TEST_GUILDS = dataManager.load_test_guilds()
 
 
-    @slash_command(guild_ids=[TEST_GUILD], description="Create a new role giver.")
+    @slash_command(guild_ids=TEST_GUILDS, description="Create a new role giver.")
     async def new_rg(self, interaction: Interaction):
         # Remove blueprint if message was deleted
         await self.get_bp_message(interaction)
@@ -52,7 +50,7 @@ class RoleGiver(commands.Cog):
             await interaction.response.send_message("🚫 FAILED. You already have an unfinished role giver! Complete it or delete it using /del_rg.", ephemeral=True)
 
 
-    @slash_command(guild_ids=[TEST_GUILD], description="Delete currently edited role giver.")
+    @slash_command(guild_ids=TEST_GUILDS, description="Delete currently edited role giver.")
     async def del_rg(self, interaction: Interaction):
         # Check if it was already deleted
         message: Message = await self.get_bp_message(interaction)
@@ -69,7 +67,7 @@ class RoleGiver(commands.Cog):
             await interaction.response.send_message("✅ Successfully deleted role giver.", ephemeral=True)
     
 
-    @slash_command(guild_ids=[TEST_GUILD], description="Lock a role giver and make it functional for users.")
+    @slash_command(guild_ids=TEST_GUILDS, description="Lock a role giver and make it functional for users.")
     async def lock_rg(self, interaction: Interaction):
         # Cancel if message was deleted
         message: Message = await self.get_bp_message(interaction)
@@ -89,15 +87,16 @@ class RoleGiver(commands.Cog):
             return
         
         # Remove guide text from role giver message
-        await message.edit(content="_Click on a number to recieve a role!_" + message.content[message.content.find("\n"):])
+        await message.edit(content="_Click on a number to receive a role!_" + message.content[message.content.find("\n"):])
 
         # Move role giver from blueprints dictionary to role_givers dictionary
         role_givers[rg.message_id] = blueprints.pop(interaction.user.id)
         dataManager.save_role_givers(role_givers)
+        
         await interaction.response.send_message("✅ Successfully locked role giver. It can now give roles to users.", ephemeral=True)
 
 
-    @slash_command(guild_ids=[TEST_GUILD], description="Add role to role giver.")
+    @slash_command(guild_ids=TEST_GUILDS, description="Add role to role giver.")
     async def add_rg_role(self, interaction: Interaction, role: Role, description: str = ""):
         # Cancel if message was deleted
         message: Message = await self.get_bp_message(interaction)
@@ -176,6 +175,22 @@ class RoleGiver(commands.Cog):
         role: Role = guild.get_role(role_ids[int(str(event.emoji.name)[0])-1])
         member = await self.client.get_guild(event.guild_id).fetch_member(event.user_id)
         await member.remove_roles(role)
+
+    
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, event: RawMessageDeleteEvent):
+        if event.message_id in list(role_givers.keys()):
+            role_givers.pop(event.message_id)
+            dataManager.save_role_givers(role_givers)
+
+    
+    @commands.Cog.listener()
+    async def on_raw_bulk_message_delete(self, event: nextcord.RawBulkMessageDeleteEvent):
+        for id in event.message_ids:
+            if id in list(role_givers.keys()):
+                role_givers.pop(id)
+                dataManager.save_role_givers(role_givers)
+                return
 
 
     async def get_bp_message(self, interaction: Interaction) -> Message:
