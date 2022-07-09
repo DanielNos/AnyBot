@@ -3,12 +3,17 @@ from nextcord.ext import commands
 from nextcord import Interaction, slash_command
 sys.path.append("../NosBot")
 import dataManager
+import logger as log
 
 TEST_GUILDS = []
+logger = None
 
 class Clear(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
+        global logger
+        logger = log.Logger("./logs/log.txt")
+
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -18,6 +23,7 @@ class Clear(commands.Cog):
 
     @slash_command(guild_ids=TEST_GUILDS, description="Deletes up to 100 messages from current channel.")
     async def clear(self, interaction: Interaction, amount: int):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: clear " + str(amount) +".")
         if amount > 100: amount = 100
         if amount < 0: amount = 0
 

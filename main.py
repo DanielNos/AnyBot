@@ -1,3 +1,4 @@
+import logger as log
 import nextcord, dataManager, sys
 from nextcord.ext import commands
 sys.path.append("./commands/")
@@ -19,5 +20,9 @@ roleGiver.load(client)
 help.load(client)
 clear.load(client)
 
-print("Commands loaded.\nLoading command data...")
+logger = log.Logger("./logs/log.txt")
+
+logger.log_info("Commands loaded.")
+logger.log_info("Loading command data...")
+
 client.run(CONFIG["token"])

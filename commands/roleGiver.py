@@ -3,8 +3,10 @@ from nextcord.ext import commands
 from nextcord import Message, Interaction, RawMessageDeleteEvent, Role, slash_command, Guild
 sys.path.append("../NosBot")
 import emoji, dataManager
+import logger as log
 
 TEST_GUILDS = []
+logger = None
 
 blueprints = {}
 role_givers = {}
@@ -27,6 +29,8 @@ class RoleGiverObject():
 class RoleGiver(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
+        global logger
+        logger = log.Logger("./logs/log.txt")
     
 
     @commands.Cog.listener()
@@ -38,6 +42,7 @@ class RoleGiver(commands.Cog):
 
     @slash_command(guild_ids=TEST_GUILDS, description="Create a new role giver.")
     async def new_rg(self, interaction: Interaction):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: new_rg.")
         # Remove blueprint if message was deleted
         await self.get_bp_message(interaction)
         
@@ -52,6 +57,7 @@ class RoleGiver(commands.Cog):
 
     @slash_command(guild_ids=TEST_GUILDS, description="Delete currently edited role giver.")
     async def del_rg(self, interaction: Interaction):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: del_rg.")
         # Check if it was already deleted
         message: Message = await self.get_bp_message(interaction)
         if message == None:
@@ -69,6 +75,7 @@ class RoleGiver(commands.Cog):
 
     @slash_command(guild_ids=TEST_GUILDS, description="Lock a role giver and make it functional for users.")
     async def lock_rg(self, interaction: Interaction):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: lock_rg.")
         # Cancel if message was deleted
         message: Message = await self.get_bp_message(interaction)
         if message == None:
@@ -92,12 +99,13 @@ class RoleGiver(commands.Cog):
         # Move role giver from blueprints dictionary to role_givers dictionary
         role_givers[rg.message_id] = blueprints.pop(interaction.user.id)
         dataManager.save_role_givers(role_givers)
-        
+
         await interaction.response.send_message("✅ Successfully locked role giver. It can now give roles to users.", ephemeral=True)
 
 
     @slash_command(guild_ids=TEST_GUILDS, description="Add role to role giver.")
     async def add_rg_role(self, interaction: Interaction, role: Role, description: str = ""):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: add_rg_role " + role.name + ".")
         # Cancel if message was deleted
         message: Message = await self.get_bp_message(interaction)
         if message == None:
@@ -124,7 +132,7 @@ class RoleGiver(commands.Cog):
         rg.role_ids.append(role.id)
         reaction_emoji = emoji.NUMBERS[len(rg.role_ids)]   
 
-        await message.edit(content=message.content + "\n" + reaction_emoji + " **@" + role.name + "** " + description)
+        await message.edit(content=message.content + "\n" + reaction_emoji + " " + str(role.mention) + " " + description)
         await message.add_reaction(reaction_emoji)
 
         await interaction.response.send_message("✅ Successfully added role to role giver.", ephemeral=True)
@@ -154,6 +162,7 @@ class RoleGiver(commands.Cog):
         # Give member the role
         guild: nextcord.Guild = await self.client.fetch_guild(event.guild_id)
         role: Role = guild.get_role(role_ids[int(str(event.emoji.name)[0])-1])
+        logger.log_info(event.member.name + "#" + str(event.member.discriminator) + " has received role @" + role.name + " from role giver " + str(event.message_id) + ".")
         await event.member.add_roles(role)
     
 
@@ -174,12 +183,14 @@ class RoleGiver(commands.Cog):
         guild: Guild = await self.client.fetch_guild(event.guild_id)
         role: Role = guild.get_role(role_ids[int(str(event.emoji.name)[0])-1])
         member = await self.client.get_guild(event.guild_id).fetch_member(event.user_id)
+        logger.log_info(event.member.name + "#" + str(event.member.discriminator) + " has received role @" + role.name + " from role giver " + str(event.message_id) + ".")
         await member.remove_roles(role)
 
     
     @commands.Cog.listener()
     async def on_raw_message_delete(self, event: RawMessageDeleteEvent):
         if event.message_id in list(role_givers.keys()):
+            logger.log_info("Role giver " + str(event.message_id) + " message was deleted. Removing role giver.")
             role_givers.pop(event.message_id)
             dataManager.save_role_givers(role_givers)
 
@@ -188,6 +199,7 @@ class RoleGiver(commands.Cog):
     async def on_raw_bulk_message_delete(self, event: nextcord.RawBulkMessageDeleteEvent):
         for id in event.message_ids:
             if id in list(role_givers.keys()):
+                logger.log_info("Role giver " + str(id) + " message was deleted. Removing role giver.")
                 role_givers.pop(id)
                 dataManager.save_role_givers(role_givers)
                 return

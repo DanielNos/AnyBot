@@ -1,23 +1,26 @@
 import json
+import logger as log
 from os.path import exists
 from os import mkdir
 from math import floor
 from commands.roleGiver import RoleGiverObject
 
+logger = log.Logger("./logs/log.txt")
+
 def load_config():
     if not exists("./config.json"):
-        print("[ERROR] Config couldn't be found.")
+        logger.log_error("Config couldn't be found.")
         exit()
     
     config = json.load(open("./config.json", encoding="utf-8"))
-    print("Config loaded.")
+    logger.log_info("Config loaded.")
 
     return config
 
 
 def load_help():
     if not exists("./commands.json"):
-        print("[ERROR] Help file couldn't be found. Help command will return empty table.")
+        logger.log_error("Help file couldn't be found. Help command will return empty table.")
         return None
     
     help = json.load(open("./commands.json", encoding="utf-8"))
@@ -32,7 +35,7 @@ def load_help():
         commands += keys[i] + "\n" + (floor(len(values[i]) / 52)) * "\n"
         actions += values[i] + "\n"
 
-    print("Help data loaded.")
+    logger.log_info("Help data loaded.")
     return (commands, actions)
 
 
@@ -52,7 +55,7 @@ def save_role_givers(roleGivers: dict):
 def load_role_givers():
     # Check if file exists
     if not exists("./data/role_givers.json"):
-        print("[ERROR] Role givers file couldn't be found. It will be created.")
+        logger.log_error("Role givers file couldn't be found. It will be created.")
         if not exists("./data/"):
             mkdir("./data/")
             with open("./data/role_givers.json", mode="w") as file:
@@ -63,8 +66,8 @@ def load_role_givers():
     # Load file
     with open("./data/role_givers.json", mode="r") as file:
         if file.read() == "":
-            print("[INFO] No role givers from previous session found.")
-            print("Role giver data loaded.")
+            logger.log_info("No role givers from previous session found.")
+            logger.log_info("Role giver data loaded.")
             file.close()
             return {}
         file.close()
@@ -83,9 +86,9 @@ def load_role_givers():
         newDict[int(rg)] = RoleGiverObject(int(dict[rg]["message_id"]), role_ids)
     
     if len(newDict) == 0:
-        print("[INFO] No role givers from previous session found.")
+        logger.log_info("No role givers from previous session found.")
     
-    print("Role giver data loaded.")
+    logger.log_info("Role giver data loaded.")
 
     return newDict
 
