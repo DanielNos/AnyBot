@@ -162,8 +162,11 @@ class RoleGiver(commands.Cog):
         # Give member the role
         guild: nextcord.Guild = await self.client.fetch_guild(event.guild_id)
         role: Role = guild.get_role(role_ids[int(str(event.emoji.name)[0])-1])
-        logger.log_info(event.member.name + "#" + str(event.member.discriminator) + " has received role @" + role.name + " from role giver " + str(event.message_id) + ".")
+        
         await event.member.add_roles(role)
+
+        if event.member != None:
+            logger.log_info(event.member.name + "#" + str(event.member.discriminator) + " has received role @" + str(role) + " from role giver " + str(event.message_id) + ".")
     
 
     @commands.Cog.listener()
@@ -183,8 +186,11 @@ class RoleGiver(commands.Cog):
         guild: Guild = await self.client.fetch_guild(event.guild_id)
         role: Role = guild.get_role(role_ids[int(str(event.emoji.name)[0])-1])
         member = await self.client.get_guild(event.guild_id).fetch_member(event.user_id)
-        logger.log_info(event.member.name + "#" + str(event.member.discriminator) + " has received role @" + role.name + " from role giver " + str(event.message_id) + ".")
+        
         await member.remove_roles(role)
+
+        if event.member != None:
+            logger.log_info(event.member.name + "#" + str(event.member.discriminator) + " has received role @" + str(role) + " from role giver " + str(event.message_id) + ".")
 
     
     @commands.Cog.listener()
