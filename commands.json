@@ -1,8 +1,11 @@
 {
-    "help": "Shows this list of commands.",
+    "help": "Shows this list of commands. Use /help [command name] for detailed info about a command.",
     "new_rg": "Creates a new role giver.",
     "del_rg": "Deletes currently edited role giver.",
     "add_rg_role [role] [*description]": "Adds a role to the currently edited role giver.",
     "lock_rg": "Locks currently edited role giver and makes it visible to users.",
-    "clear [amount]": "Deletes up to 100 messages from current channel."
+    "clear [amount]": "Deletes up to 100 messages from current channel.",
+    "user_info [*user]": "Shows information about a specified user. Use without target for your information.",
+    "joined [*member]": "Shows when guild member joined current guild. Use without target for your information.",
+    "new_poll [question] [option 1] [option 2] [*option 3-9]": "Creates a new poll. You have to provide at least two options. You can change reaction emoji by starting the option text with them."
 }

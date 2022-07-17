@@ -21,7 +21,7 @@ class Clear(commands.Cog):
         TEST_GUILDS = dataManager.load_test_guilds()
     
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Deletes up to 100 messages from current channel.")
+    @slash_command(guild_ids=TEST_GUILDS, description="Deletes up to 100 messages from current channel.", force_global=True)
     async def clear(self, interaction: Interaction, amount: int):
         logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: clear " + str(amount) +".")
         if amount > 100: amount = 100

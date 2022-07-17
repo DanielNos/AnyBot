@@ -2,7 +2,7 @@ import logger as log
 import nextcord, dataManager, sys
 from nextcord.ext import commands
 sys.path.append("./commands/")
-import roleGiver, help, clear
+import roleGivers, help, clear, info, utilities, polls
 
 # Global variables
 CONFIG = dataManager.load_config()
@@ -16,9 +16,12 @@ intents.guild_reactions = True
 client = commands.Bot(command_prefix="?", intents=intents)
 
 # Load commands
-roleGiver.load(client)
+roleGivers.load(client)
 help.load(client)
 clear.load(client)
+info.load(client)
+utilities.load(client)
+polls.load(client)
 
 logger = log.Logger("./logs/log.txt")
 

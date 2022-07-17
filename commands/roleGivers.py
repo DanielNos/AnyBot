@@ -1,8 +1,8 @@
 import nextcord, sys
 from nextcord.ext import commands
-from nextcord import Message, Interaction, RawMessageDeleteEvent, Role, slash_command, Guild
+from nextcord import slash_command, Message, Interaction, RawMessageDeleteEvent, Role, Guild
 sys.path.append("../NosBot")
-import emoji, dataManager
+import emojiDict, dataManager
 import logger as log
 
 TEST_GUILDS = []
@@ -11,7 +11,7 @@ logger = None
 blueprints = {}
 role_givers = {}
 
-class RoleGiverObject():
+class RoleGiver():
     def __init__(self, message_id: int, role_ids = []):
         self.message_id = message_id
         self.role_ids = role_ids
@@ -26,7 +26,7 @@ class RoleGiverObject():
         return "RoleGiver{message_id=" + str(self.message_id) + ", role_ids=" + str(self.role_ids) + "}"
 
 
-class RoleGiver(commands.Cog):
+class RoleGivers(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
         global logger
@@ -40,24 +40,24 @@ class RoleGiver(commands.Cog):
         TEST_GUILDS = dataManager.load_test_guilds()
 
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Create a new role giver.")
+    @slash_command(guild_ids=TEST_GUILDS, description="Create a new role giver.", force_global=True)
     async def new_rg(self, interaction: Interaction):
-        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: new_rg.")
+        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: new_rg.")
         # Remove blueprint if message was deleted
         await self.get_bp_message(interaction)
         
         # Create a new role giver if one doesn't already exist
         if not interaction.user.id in (blueprints.keys()):
             message: Message = await interaction.channel.send("Use /add_role [role name] [*description] to add roles.")
-            blueprints[interaction.user.id] = RoleGiverObject(message.id)
+            blueprints[interaction.user.id] = RoleGiver(message.id)
             await interaction.response.send_message("✅ Successfully created role giver.", ephemeral=True)
         else:
             await interaction.response.send_message("🚫 FAILED. You already have an unfinished role giver! Complete it or delete it using /del_rg.", ephemeral=True)
 
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Delete currently edited role giver.")
+    @slash_command(guild_ids=TEST_GUILDS, description="Delete currently edited role giver.", force_global=True)
     async def del_rg(self, interaction: Interaction):
-        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: del_rg.")
+        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: del_rg.")
         # Check if it was already deleted
         message: Message = await self.get_bp_message(interaction)
         if message == None:
@@ -73,9 +73,9 @@ class RoleGiver(commands.Cog):
             await interaction.response.send_message("✅ Successfully deleted role giver.", ephemeral=True)
     
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Lock a role giver and make it functional for users.")
+    @slash_command(guild_ids=TEST_GUILDS, description="Lock a role giver and make it functional for users.", force_global=True)
     async def lock_rg(self, interaction: Interaction):
-        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: lock_rg.")
+        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: lock_rg.")
         # Cancel if message was deleted
         message: Message = await self.get_bp_message(interaction)
         if message == None:
@@ -87,7 +87,7 @@ class RoleGiver(commands.Cog):
             await interaction.response.send_message("🚫 FAILED. You don't have an unfinished role giver! You can create one by using /new_rg.", ephemeral=True)
             return
         
-        rg: RoleGiverObject = blueprints[interaction.user.id]
+        rg: RoleGiver = blueprints[interaction.user.id]
         # Cancel if role giver doesn't have any roles
         if len(rg.role_ids) < 1:
             await interaction.response.send_message("🚫 FAILED. Role giver doesn't have any roles! You can add roles to it using /add_rg_role [role] [*description].", ephemeral=True)
@@ -103,9 +103,9 @@ class RoleGiver(commands.Cog):
         await interaction.response.send_message("✅ Successfully locked role giver. It can now give roles to users.", ephemeral=True)
 
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Add role to role giver.")
+    @slash_command(guild_ids=TEST_GUILDS, description="Add role to role giver.", force_global=True)
     async def add_rg_role(self, interaction: Interaction, role: Role, description: str = ""):
-        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: add_rg_role " + role.name + ".")
+        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: add_rg_role " + role.name + ".")
         # Cancel if message was deleted
         message: Message = await self.get_bp_message(interaction)
         if message == None:
@@ -122,7 +122,7 @@ class RoleGiver(commands.Cog):
             await interaction.response.send_message("🚫 FAILED. Provided role isn't valid.", ephemeral=True)
             return
 
-        rg: RoleGiverObject = blueprints[interaction.user.id]
+        rg: RoleGiver = blueprints[interaction.user.id]
         # Cancel if role giver is full
         if len(rg.role_ids) >= 9:
             await interaction.response.send_message("🚫 FAILED. Role giver cant't contain any more roles! Complete it using /lock_rg then create a new role giver using /new_rg for remaining roles.", ephemeral=True)
@@ -130,7 +130,7 @@ class RoleGiver(commands.Cog):
         
         # Add role to role giver message
         rg.role_ids.append(role.id)
-        reaction_emoji = emoji.NUMBERS[len(rg.role_ids)]   
+        reaction_emoji = emojiDict.NUMBERS[len(rg.role_ids)]   
 
         await message.edit(content=message.content + "\n" + reaction_emoji + " " + str(role.mention) + " " + description)
         await message.add_reaction(reaction_emoji)
@@ -145,13 +145,13 @@ class RoleGiver(commands.Cog):
             return
         
         # Cancel if message isn't a role giver
-        if (not event.message_id in role_givers.keys()):
+        if not event.message_id in role_givers.keys():
             return
         
         role_ids = role_givers[event.message_id].role_ids
 
         # Remove reaction if it isn't a valid role number
-        if not event.emoji.name in list(emoji.NUMBERS.values())[1:len(role_ids)+1]:
+        if not event.emoji.name in list(emojiDict.NUMBERS.values())[1:len(role_ids)+1]:
             message: Message = await self.client.get_channel(event.channel_id).fetch_message(event.message_id)
             for reaction in message.reactions:
                 if str(reaction.emoji) == str(event.emoji.name):
@@ -165,8 +165,7 @@ class RoleGiver(commands.Cog):
         
         await event.member.add_roles(role)
 
-        if event.member != None:
-            logger.log_info(event.member.name + "#" + str(event.member.discriminator) + " has received role @" + str(role) + " from role giver " + str(event.message_id) + ".")
+        logger.log_info(event.member.name + "#" + event.member.discriminator + " has received role @" + str(role) + " from role giver " + str(event.message_id) + ".")
     
 
     @commands.Cog.listener()
@@ -189,8 +188,7 @@ class RoleGiver(commands.Cog):
         
         await member.remove_roles(role)
 
-        if event.member != None:
-            logger.log_info(event.member.name + "#" + str(event.member.discriminator) + " has received role @" + str(role) + " from role giver " + str(event.message_id) + ".")
+        logger.log_info(member.name + "#" + member.discriminator + " has received role @" + str(role) + " from role giver " + str(event.message_id) + ".")
 
     
     @commands.Cog.listener()
@@ -223,4 +221,4 @@ class RoleGiver(commands.Cog):
 
 
 def load(client: commands.Bot):
-    client.add_cog(RoleGiver(client))
+    client.add_cog(RoleGivers(client))

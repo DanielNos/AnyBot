@@ -157,3 +157,4 @@ config*
 /data/*
 .vscode
 data/role_givers.json
+logs/

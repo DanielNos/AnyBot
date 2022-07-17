@@ -2,8 +2,7 @@ import json
 import logger as log
 from os.path import exists
 from os import mkdir
-from math import floor
-from commands.roleGiver import RoleGiverObject
+from commands.roleGivers import RoleGiver
 
 logger = log.Logger("./logs/log.txt")
 
@@ -28,12 +27,12 @@ def load_help():
     # Format data
     keys = list(help.keys())
     values = list(help.values())
-    commands = ""
-    actions = ""
+    commands = []
+    actions = []
 
     for i in range(len(keys)):
-        commands += keys[i] + "\n" + (floor(len(values[i]) / 52)) * "\n"
-        actions += values[i] + "\n"
+        commands.append(keys[i])
+        actions.append(values[i])
 
     logger.log_info("Help data loaded.")
     return (commands, actions)
@@ -83,7 +82,7 @@ def load_role_givers():
         role_ids = []
         for id in dict[rg]["role_ids"]:
             role_ids.append(int(id))
-        newDict[int(rg)] = RoleGiverObject(int(dict[rg]["message_id"]), role_ids)
+        newDict[int(rg)] = RoleGiver(int(dict[rg]["message_id"]), role_ids)
     
     if len(newDict) == 0:
         logger.log_info("No role givers from previous session found.")
