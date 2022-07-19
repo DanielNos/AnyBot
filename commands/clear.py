@@ -1,6 +1,7 @@
 import sys
 from nextcord.ext import commands
 from nextcord import Interaction, slash_command
+
 sys.path.append("../NosBot")
 import dataManager
 import logger as log

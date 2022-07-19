@@ -1,8 +1,12 @@
 import logger as log
 import nextcord, dataManager, sys
 from nextcord.ext import commands
+
 sys.path.append("./commands/")
 import roleGivers, help, clear, info, utilities, polls
+
+sys.path.append("./commands/games/")
+import tictactoe
 
 # Global variables
 CONFIG = dataManager.load_config()
@@ -23,9 +27,14 @@ info.load(client)
 utilities.load(client)
 polls.load(client)
 
+# Load Games
+tictactoe.load(client)
+
+# Setup logger
 logger = log.Logger("./logs/log.txt")
 
 logger.log_info("Commands loaded.")
 logger.log_info("Loading command data...")
 
+# Run bot
 client.run(CONFIG["token"])

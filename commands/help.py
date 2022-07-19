@@ -50,7 +50,7 @@ class Help(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
         global logger
-        logger = log.Logger("../logs/log.txt")
+        logger = log.Logger("./logs/log.txt")
 
 
     @commands.Cog.listener()

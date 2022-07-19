@@ -1,6 +1,7 @@
 import nextcord, sys
 from nextcord.ext import commands
 from nextcord import slash_command, Message, Interaction, RawMessageDeleteEvent, Role, Guild
+
 sys.path.append("../NosBot")
 import emojiDict, dataManager
 import logger as log
