@@ -99,7 +99,7 @@ def create_help_embeds(commands, actions):
 
 def create_embed_template() -> Embed:
     embed = Embed(title="NosBot Commands",  color=0xFBCE9D)
-    embed.set_thumbnail(url="https://cdn.discordapp.com/app-icons/990276313287888896/f4fa1fc1207e7430a510ed6b367da042.png?size=256")
+    embed.set_thumbnail(url="https://raw.githubusercontent.com/DanielNos/NosBot/main/icons/nosbot.png")
     return embed
 
 
