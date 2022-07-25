@@ -82,7 +82,7 @@ class Game:
         self.turn += -int(self.turn == 2) + int(self.turn == 1)
         self.round += 1
 
-        name = "Round " + str(floor(self.round-1)) + " | Turn: " + ([self.player.name, self.opponent.name][self.turn-1])
+        name = "Round " + str(floor(self.round / 2)+1) + " | Turn: " + ([self.player.name, self.opponent.name][self.turn-1])
         self.board_render.set_field_at(0, name=name, value=self.__render_board())
 
     
@@ -165,7 +165,7 @@ class TicTacToe(commands.Cog):
 
     @tictactoe.subcommand(description="Play a game of tic-tac-toe against me.")
     async def singleplayer(self, interaction: Interaction, difficulty: str = SlashOption(
-        name="difficulty", choices=["Easy", "Medium", "Hard"]
+        name="difficulty", choices=["Easy"]
     )):
         # Check if user is in a game
         if interaction.user.id in games.keys():
@@ -208,7 +208,7 @@ class TicTacToe(commands.Cog):
             return
 
         # Create a new game
-        game = Game(interaction.user, opponent_id=opponent)
+        game = Game(interaction.user, opponent)
         await interaction.response.send_message(embed=game.get_render())
 
         # Find game message
@@ -262,28 +262,31 @@ class TicTacToe(commands.Cog):
             await interaction.response.send_message(embed=create_victory_embed(game.board_render.title, winner), delete_after=WINNER_DELETE_TIME)
             return
 
+        # Notify about play
+        await interaction.response.send_message(content="ℹ️ " + interaction.user.name + " has played their turn.", delete_after=INFO_DELETE_TIME)  
+
+        # Return if game is multiplayer
+        if game.difficulty == None:
+            return
+
         # Play AI players turn
-        if game.difficulty != None:          
-            # Easy
-            if game.difficulty == "Easy":
-                # Pick a random space
+        # Easy
+        if game.difficulty == "Easy":
+            # Pick a random space
+            x = randint(0, 2)
+            y = randint(0, 2)
+            while game.board[x][y] != 0:
                 x = randint(0, 2)
                 y = randint(0, 2)
-
-                while game.board[x][y] != 0:
-                    x = randint(0, 2)
-                    y = randint(0, 2)
-            # Medium
-            elif game.difficulty == "Medium":
-                pass
-            # Hard
-            else:
-                pass
-
-            
-            game.play(x, y)
-
-            await game.message.edit(embed=game.board_render)
+        # Medium
+        elif game.difficulty == "Medium":
+            pass
+        # Hard
+        else:
+            pass
+        
+        game.play(x, y)
+        await game.message.edit(embed=game.board_render)
         
         # Check for winner again
         winner = check_for_winner(game)
@@ -293,8 +296,6 @@ class TicTacToe(commands.Cog):
                 winner = None
             await interaction.response.send_message(embed=create_victory_embed(game.board_render.title, winner), delete_after=WINNER_DELETE_TIME)
             return
-        
-        await interaction.response.send_message(content="ℹ️ " + interaction.user.name + " has played their turn.", delete_after=INFO_DELETE_TIME)  
 
 
 def create_victory_embed(title: str, winner: User) -> Embed:
