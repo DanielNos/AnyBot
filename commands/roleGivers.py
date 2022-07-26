@@ -207,7 +207,6 @@ class RoleGivers(commands.Cog):
                 logger.log_info("Role giver " + str(id) + " message was deleted. Removing role giver.")
                 role_givers.pop(id)
                 dataManager.save_role_givers(role_givers)
-                return
 
 
     async def get_bp_message(self, interaction: Interaction) -> Message:

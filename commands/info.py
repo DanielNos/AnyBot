@@ -4,6 +4,7 @@ from nextcord import slash_command, Embed, Interaction, Member
 
 sys.path.append("../NosBot")
 import logger as log
+import dataManager
 
 TEST_GUILDS = []
 logger = None
@@ -13,6 +14,12 @@ class Info(commands.Cog):
         self.client = client
         global logger
         logger = log.Logger("./logs/log.txt")
+    
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        global TEST_GUILDS
+        TEST_GUILDS = dataManager.load_test_guilds()
     
 
     @slash_command(guild_ids=TEST_GUILDS, description="Show information about a user. If no target is specified target will be author.", force_global=True)

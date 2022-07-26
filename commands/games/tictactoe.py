@@ -135,6 +135,7 @@ class TicTacToe(commands.Cog):
     async def tictactoe(self, interaction: Interaction):
         return
     
+    
     @tictactoe.subcommand(description="Concede your game of tic-tac-toe and let your opponent win.")
     async def concede(self, interaction: Interaction):
         # Return if user isn't in a game

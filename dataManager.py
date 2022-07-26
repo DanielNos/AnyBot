@@ -12,7 +12,6 @@ def load_config():
         exit()
     
     config = json.load(open("./config.json", encoding="utf-8"))
-    logger.log_info("Config loaded.")
 
     return config
 
@@ -40,14 +39,14 @@ def load_help():
 
 def save_role_givers(roleGivers: dict):
     # Convert class instances to objects
-    newDict = {}
+    new_dict = {}
 
     for rg in roleGivers:
-        newDict[rg] = roleGivers[rg].to_json()
+        new_dict[rg] = roleGivers[rg].to_json()
 
     # Save
     with open("./data/role_givers.json", mode="w") as file:
-        file.write(json.dumps(newDict))
+        file.write(json.dumps(new_dict))
         file.close()
 
 
@@ -76,22 +75,52 @@ def load_role_givers():
         file.close()
 
     # Parse data
-    newDict = {}
+    new_dict = {}
 
     for rg in dict:
         role_ids = []
         for id in dict[rg]["role_ids"]:
             role_ids.append(int(id))
-        newDict[int(rg)] = RoleGiver(int(dict[rg]["message_id"]), role_ids)
+        new_dict[int(rg)] = RoleGiver(int(dict[rg]["message_id"]), role_ids)
     
-    if len(newDict) == 0:
+    if len(new_dict) == 0:
         logger.log_info("No role givers from previous session found.")
     
     logger.log_info("Role giver data loaded.")
 
-    return newDict
+    return new_dict
 
 
 def load_test_guilds():
     config = json.load(open("./config.json", encoding="utf-8"))
     return config["test_guilds"]
+
+
+def save_polls(polls: dict):
+    # Save
+    with open("./data/polls.json", mode="w", encoding="utf-8") as file:
+        file.write(json.dumps(polls))
+        file.close()
+
+
+def load_polls() -> dict:
+    # Check if file exists
+    if not exists("./data/polls.json"):
+        logger.log_error("Polls file couldn't be found. It will be created.")
+        if not exists("./data/"):
+            mkdir("./data/")
+            with open("./data/polls.json", mode="w") as file:
+                file.write("{}")
+                file.close()
+        return {}
+    
+    # Load polls
+    polls = json.load(open("./data/polls.json", encoding="utf-8"))
+    new_dict = {}
+
+    for message_id in polls.keys():
+        new_dict[int(message_id)] = polls[message_id]
+
+    logger.log_info("Polls data loaded.")
+
+    return new_dict

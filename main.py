@@ -8,8 +8,12 @@ import roleGivers, help, clear, info, utilities, polls
 sys.path.append("./commands/games/")
 import tictactoe
 
+# Setup logger
+logger = log.Logger("./logs/log.txt")
+
 # Global variables
 CONFIG = dataManager.load_config()
+logger.log_info("Config loaded.")
 
 # Set intents
 intents = nextcord.Intents.default()
@@ -30,11 +34,8 @@ polls.load(client)
 # Load Games
 tictactoe.load(client)
 
-# Setup logger
-logger = log.Logger("./logs/log.txt")
-
 logger.log_info("Commands loaded.")
-logger.log_info("Loading command data...")
+logger.log_info("Loading commands data...")
 
 # Run bot
 client.run(CONFIG["token"])

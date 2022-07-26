@@ -1,11 +1,10 @@
 import sys, nextcord, emoji
-from typing import List
 from nextcord.ext import commands
-from nextcord import slash_command, Message, PartialInteractionMessage, User, Embed, Interaction, Reaction
+from nextcord import slash_command, Message, PartialInteractionMessage, User, Embed, Interaction, Reaction, RawMessageDeleteEvent
 
 sys.path.append("../NosBot")
 import logger as log
-import emojiDict
+import dataManager, emojiDict
 
 
 TEST_GUILDS = []
@@ -18,6 +17,15 @@ class Polls(commands.Cog):
         self.client = client
         global logger
         logger = log.Logger("./logs/log.txt")
+
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        global TEST_GUILDS, polls
+
+        TEST_GUILDS = dataManager.load_test_guilds()
+        polls = dataManager.load_polls()
+        print(polls)
 
 
     @slash_command(guild_ids=TEST_GUILDS, description="Create a poll.", force_global=True)
@@ -62,6 +70,10 @@ class Polls(commands.Cog):
         # Add reactions
         for e in emojis:
             await message.add_reaction(e)
+        
+        # Save polls to file
+        dataManager.save_polls(polls)
+        print(polls)
     
 
     @commands.Cog.listener()
@@ -70,6 +82,7 @@ class Polls(commands.Cog):
         if len(polls) == 0:
             return
 
+        print(event.message_id)
         # Cancel if message isn't a poll
         if not event.message_id in polls.keys():
             return
@@ -128,6 +141,23 @@ class Polls(commands.Cog):
         # Update poll
         message: Message = await self.client.get_channel(event.channel_id).fetch_message(event.message_id)
         await self.update_poll(message)
+
+
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, event: RawMessageDeleteEvent):
+        if event.message_id in list(polls.keys()):
+            logger.log_info("Poll " + str(event.message_id) + " message was deleted. Removing poll object.")
+            polls.pop(event.message_id)
+            dataManager.save_polls(polls)
+
+    
+    @commands.Cog.listener()
+    async def on_raw_bulk_message_delete(self, event: nextcord.RawBulkMessageDeleteEvent):
+        for id in event.message_ids:
+            if id in list(polls.keys()):
+                logger.log_info("Poll " + str(id) + " message was deleted. Removing poll object.")
+                polls.pop(id)
+                dataManager.save_polls(polls)
 
 
     async def update_poll(self, message: Message):
