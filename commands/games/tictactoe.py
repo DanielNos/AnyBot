@@ -131,7 +131,7 @@ class TicTacToe(commands.Cog):
         TEST_GUILDS = dataManager.load_test_guilds()
 
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Deletes up to 100 messages from current channel.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="none", force_global=True)
     async def tictactoe(self, interaction: Interaction):
         return
     

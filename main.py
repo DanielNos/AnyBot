@@ -6,7 +6,7 @@ sys.path.append("./commands/")
 import roleGivers, help, clear, info, utilities, polls
 
 sys.path.append("./commands/games/")
-import tictactoe
+import tictactoe, hangman
 
 # Setup logger
 logger = log.Logger("./logs/log.txt")
@@ -33,6 +33,7 @@ polls.load(client)
 
 # Load Games
 tictactoe.load(client)
+hangman.load(client)
 
 logger.log_info("Commands loaded.")
 logger.log_info("Loading commands data...")

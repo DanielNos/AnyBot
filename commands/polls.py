@@ -25,7 +25,6 @@ class Polls(commands.Cog):
 
         TEST_GUILDS = dataManager.load_test_guilds()
         polls = dataManager.load_polls()
-        print(polls)
 
 
     @slash_command(guild_ids=TEST_GUILDS, description="Create a poll.", force_global=True)
