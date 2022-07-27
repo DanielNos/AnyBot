@@ -194,7 +194,7 @@ class RoleGivers(commands.Cog):
     
     @commands.Cog.listener()
     async def on_raw_message_delete(self, event: RawMessageDeleteEvent):
-        if event.message_id in list(role_givers.keys()):
+        if event.message_id in role_givers.keys():
             logger.log_info("Role giver " + str(event.message_id) + " message was deleted. Removing role giver.")
             role_givers.pop(event.message_id)
             dataManager.save_role_givers(role_givers)
@@ -203,7 +203,7 @@ class RoleGivers(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_bulk_message_delete(self, event: nextcord.RawBulkMessageDeleteEvent):
         for id in event.message_ids:
-            if id in list(role_givers.keys()):
+            if id in role_givers.keys():
                 logger.log_info("Role giver " + str(id) + " message was deleted. Removing role giver.")
                 role_givers.pop(id)
                 dataManager.save_role_givers(role_givers)

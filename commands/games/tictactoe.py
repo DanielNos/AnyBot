@@ -2,7 +2,7 @@ import sys
 from random import randint
 from math import floor
 from nextcord.ext import commands
-from nextcord import slash_command, Interaction, SlashOption, Member, Embed, Message, User
+from nextcord import slash_command, Interaction, SlashOption, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
 
 sys.path.append("../../NosBot")
 import dataManager
@@ -15,6 +15,7 @@ WINNER_DELETE_TIME = 20
 
 logger = None
 games = {}
+game_messages = {}
 
 class Game:
     def __init__(self, player: User, opponent: User, difficulty: str = None):
@@ -138,6 +139,8 @@ class TicTacToe(commands.Cog):
     
     @tictactoe.subcommand(description="Concede your game of tic-tac-toe and let your opponent win.")
     async def concede(self, interaction: Interaction):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: tictactoe concede.")
+
         # Return if user isn't in a game
         if not interaction.user.id in games.keys():
             await interaction.response.send_message("🚫 Failed. You can't concede because your currently aren't in a game.", ephemeral=True)
@@ -168,6 +171,8 @@ class TicTacToe(commands.Cog):
     async def singleplayer(self, interaction: Interaction, difficulty: str = SlashOption(
         name="difficulty", choices=["Easy"]
     )):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: tictactoe singleplayer " + difficulty + ".")
+
         # Check if user is in a game
         if interaction.user.id in games.keys():
             await interaction.response.send_message("🚫 Failed. You are currently in a game. You can leave it using /tictactoe concede.", ephemeral=True)
@@ -190,10 +195,13 @@ class TicTacToe(commands.Cog):
 
         # Store game data
         games[game.player.id] = game
+        game_messages[game.message.id] = game.player.id
     
 
     @tictactoe.subcommand(description="Play a game of tic-tac-toe against another person.")
     async def multiplier(self, interaction: Interaction, opponent: Member):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: tictactoe multiplayer " + opponent.name + "#" + opponent.discriminator + ".")
+
         # Return if users are in a game
         if interaction.user.id in games.keys():
             await interaction.response.send_message("🚫 Failed. You are currently in a game. You can leave it using /tictactoe concede.", ephemeral=True)
@@ -226,6 +234,7 @@ class TicTacToe(commands.Cog):
         # Store game data
         games[game.player.id] = game
         games[game.opponent.id] = game
+        game_messages[game.message.id] = game.player.id
 
 
     @tictactoe.subcommand(description="Play your turn of tictactoe.")
@@ -233,6 +242,8 @@ class TicTacToe(commands.Cog):
     row: int = SlashOption(name="row", choices={ "1": 0, "2": 1, "3": 2 }),
     column: int = SlashOption(name="column", choices={ "1": 0, "2": 1, "3": 2 })
         ):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: tictactoe play " + str(row) + " " + str(column) + ".")
+
         # Return if user isn't in a game
         if not interaction.user.id in games.keys():
             await interaction.response.send_message("🚫 Failed. You currently aren't in a game. You can start one using /tictactoe [singleplayer/multiplayer].", ephemeral=True)
@@ -297,6 +308,33 @@ class TicTacToe(commands.Cog):
                 winner = None
             await interaction.response.send_message(embed=create_victory_embed(game.board_render.title, winner), delete_after=WINNER_DELETE_TIME)
             return
+
+    
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, event: RawMessageDeleteEvent):
+        if event.message_id in game_messages.keys():
+            logger.log_info("Tic-Tac-Toe " + str(event.message_id) + " message was deleted. Removing game instance.")
+
+            player_id = game_messages.pop(event.message_id)
+            game: Game = games[player_id]
+
+            games.pop(game.player.id)
+            if game.difficulty == None:
+                games.pop(game.opponent.id)
+    
+
+    @commands.Cog.listener()
+    async def on_raw_bulk_message_delete(self, event: RawBulkMessageDeleteEvent):
+        for id in event.message_ids:
+            if id in game_messages.keys():
+                logger.log_info("Tic-Tac-Toe " + str(id) + " message was deleted. Removing game instance.")
+
+                player_id = game_messages.pop(id)
+                game: Game = games[player_id]
+
+                games.pop(game.player.id)
+                if game.difficulty == None:
+                    games.pop(game.opponent.id)
 
 
 def create_victory_embed(title: str, winner: User) -> Embed:
