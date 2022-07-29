@@ -62,15 +62,17 @@ class Help(commands.Cog):
     
 
     @slash_command(guild_ids=TEST_GUILDS, description="Show all commands and their actions. Use /help [command name] for detailed info about command.", force_global=True)
-    async def help(self, interaction: Interaction):
-
+    async def help(self, interaction: Interaction, command: str = None):
         logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: help.")
+
         # Return if help wasn't initialized
         if HELP == None: 
             logger.log_error("Help command was called before it was initialized.")
             return
-
-        await interaction.response.send_message(embed=HELP[0], view=HelpControls())
+        
+        if command == None:
+            await interaction.response.send_message(embed=HELP[0], view=HelpControls())
+            return
 
 
 def create_help_embeds(commands, actions):

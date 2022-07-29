@@ -3,6 +3,7 @@ from random import randint
 from math import floor
 from nextcord.ext import commands
 from nextcord import slash_command, Interaction, SlashOption, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
+from numpy import delete
 
 sys.path.append("../../NosBot")
 import dataManager
@@ -117,6 +118,16 @@ class Game:
                 return self.__get_player(p)
         
         return None
+    
+    
+    def delete(self):
+        global games, game_messages
+
+        games.pop(self.player.id)
+        if self.difficulty == None:
+            games.pop(self.opponent.id)
+
+        game_messages.pop(self.message.id)
 
 
 class TicTacToe(commands.Cog):
@@ -162,9 +173,7 @@ class TicTacToe(commands.Cog):
         await interaction.response.send_message(embed=embed, delete_after=WINNER_DELETE_TIME)
 
         # Delete game
-        games.pop(game.player.id)
-        if game.difficulty == None:
-            games.pop(game.opponent.id)
+        game.delete()
 
 
     @tictactoe.subcommand(description="Play a game of tic-tac-toe against me.")
@@ -199,7 +208,7 @@ class TicTacToe(commands.Cog):
     
 
     @tictactoe.subcommand(description="Play a game of tic-tac-toe against another person.")
-    async def multiplier(self, interaction: Interaction, opponent: Member):
+    async def multiplayer(self, interaction: Interaction, opponent: Member):
         logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: tictactoe multiplayer " + opponent.name + "#" + opponent.discriminator + ".")
 
         # Return if users are in a game
@@ -357,6 +366,8 @@ def check_for_winner(game: Game):
         # Update embed
         game.board_render.add_field(name="DRAW!", value="Game has ended with a draw.", inline=False)
         game.board_render.remove_footer()
+
+        game.delete()
         return "DRAW"
 
     # No winner
@@ -369,9 +380,7 @@ def check_for_winner(game: Game):
     game.board_render.remove_footer()
     
     # Delete game
-    games.pop(game.player.id)
-    if game.difficulty == None:
-        games.pop(game.opponent.id)
+    game.delete()
 
     return winner
 

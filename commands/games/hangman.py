@@ -264,6 +264,7 @@ class Hangman(commands.Cog):
 
         # Add player
         game.players.append(player)
+        users_in_games[player.id] = game
         await game.message.edit(embed=game.create_embed())
         await interaction.response.send_message("ℹ️ " + player.name + "#" + player.discriminator + " was added to " + game.creator.name + "'s game of hangman.", delete_after=PLAYER_ADD_IDT)
 
