@@ -4,7 +4,7 @@ from nextcord.ext import commands
 from nextcord import PartialInteractionMessage, slash_command, Interaction, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
 
 sys.path.append("../../NosBot")
-import dataManager, emojiDict
+import dataManager, emojiDict, access
 import logger as log
 
 LETTERS = list("abcdefghijklmnopqrstuvwxyz")
@@ -146,6 +146,11 @@ class Hangman(commands.Cog):
     @hangman.subcommand(description="Start a game of hangman.")
     async def start(self, interaction: Interaction, expression: str):
         logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: hangman start " + expression + ".")
+
+        # Return if user doesn't have permission to run command
+        if not access.has_access(interaction.user, interaction.guild, "Start Games"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission to start games.", ephemeral=True)
+            return
 
         # Return if user is in a game
         if interaction.user.id in users_in_games.keys():

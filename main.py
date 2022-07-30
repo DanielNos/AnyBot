@@ -3,7 +3,7 @@ import nextcord, dataManager, sys
 from nextcord.ext import commands
 
 sys.path.append("./commands/")
-import roleGivers, help, clear, info, utilities, polls
+import roleGivers, help, clear, info, utilities, polls, permissions
 
 sys.path.append("./commands/games/")
 import tictactoe, hangman
@@ -30,6 +30,7 @@ clear.load(client)
 info.load(client)
 utilities.load(client)
 polls.load(client)
+permissions.load(client)
 
 # Load Games
 tictactoe.load(client)

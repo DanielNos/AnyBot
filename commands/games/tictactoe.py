@@ -3,10 +3,9 @@ from random import randint
 from math import floor
 from nextcord.ext import commands
 from nextcord import slash_command, Interaction, SlashOption, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
-from numpy import delete
 
 sys.path.append("../../NosBot")
-import dataManager
+import dataManager, access
 import logger as log
 
 EMPTY_BOARD = "▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▫️▫️▫️▫️▫️▫️▫️▫️▫️▫️▫️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▫️▫️▫️▫️▫️▫️▫️▫️▫️▫️▫️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n"
@@ -17,6 +16,7 @@ WINNER_DELETE_TIME = 20
 logger = None
 games = {}
 game_messages = {}
+
 
 class Game:
     def __init__(self, player: User, opponent: User, difficulty: str = None):
@@ -182,6 +182,11 @@ class TicTacToe(commands.Cog):
     )):
         logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: tictactoe singleplayer " + difficulty + ".")
 
+        # Return if user doesn't have permission to run command
+        if not access.has_access(interaction.user, interaction.guild, "Start Games"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission to start games.", ephemeral=True)
+            return
+
         # Check if user is in a game
         if interaction.user.id in games.keys():
             await interaction.response.send_message("🚫 Failed. You are currently in a game. You can leave it using /tictactoe concede.", ephemeral=True)
@@ -210,6 +215,12 @@ class TicTacToe(commands.Cog):
     @tictactoe.subcommand(description="Play a game of tic-tac-toe against another person.")
     async def multiplayer(self, interaction: Interaction, opponent: Member):
         logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: tictactoe multiplayer " + opponent.name + "#" + opponent.discriminator + ".")
+
+        # Return if user doesn't have permission to run command
+        if not access.has_access(interaction.user, interaction.guild, "Start Games"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission to start games.", ephemeral=True)
+            return
+
 
         # Return if users are in a game
         if interaction.user.id in games.keys():

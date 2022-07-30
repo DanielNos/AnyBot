@@ -3,7 +3,7 @@ from nextcord.ext import commands
 from nextcord import slash_command, Message, Interaction, RawMessageDeleteEvent, Role, Guild
 
 sys.path.append("../NosBot")
-import emojiDict, dataManager
+import emojiDict, dataManager, access
 import logger as log
 
 TEST_GUILDS = []
@@ -44,6 +44,12 @@ class RoleGivers(commands.Cog):
     @slash_command(guild_ids=TEST_GUILDS, description="Create a new role giver.", force_global=True)
     async def new_rg(self, interaction: Interaction):
         logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: new_rg.")
+
+        # Return if user doesn't have permission to run command
+        if not access.has_access(interaction.user, interaction.guild, "Manage Role Givers"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission manage role givers.", ephemeral=True)
+            return
+
         # Remove blueprint if message was deleted
         await self.get_bp_message(interaction)
         
@@ -59,6 +65,12 @@ class RoleGivers(commands.Cog):
     @slash_command(guild_ids=TEST_GUILDS, description="Delete currently edited role giver.", force_global=True)
     async def del_rg(self, interaction: Interaction):
         logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: del_rg.")
+
+        # Return if user doesn't have permission to run command
+        if not access.has_access(interaction.user, interaction.guild, "Manage Role Givers"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission manage role givers.", ephemeral=True)
+            return
+
         # Check if it was already deleted
         message: Message = await self.get_bp_message(interaction)
         if message == None:
@@ -77,6 +89,12 @@ class RoleGivers(commands.Cog):
     @slash_command(guild_ids=TEST_GUILDS, description="Lock a role giver and make it functional for users.", force_global=True)
     async def lock_rg(self, interaction: Interaction):
         logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: lock_rg.")
+
+        # Return if user doesn't have permission to run command
+        if not access.has_access(interaction.user, interaction.guild, "Manage Role Givers"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission manage role givers.", ephemeral=True)
+            return
+
         # Cancel if message was deleted
         message: Message = await self.get_bp_message(interaction)
         if message == None:
@@ -107,6 +125,12 @@ class RoleGivers(commands.Cog):
     @slash_command(guild_ids=TEST_GUILDS, description="Add role to role giver.", force_global=True)
     async def add_rg_role(self, interaction: Interaction, role: Role, description: str = ""):
         logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: add_rg_role " + role.name + ".")
+        
+        # Return if user doesn't have permission to run command
+        if not access.has_access(interaction.user, interaction.guild, "Manage Role Givers"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission manage role givers.", ephemeral=True)
+            return
+        
         # Cancel if message was deleted
         message: Message = await self.get_bp_message(interaction)
         if message == None:

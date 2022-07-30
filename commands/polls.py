@@ -4,7 +4,7 @@ from nextcord import slash_command, Message, PartialInteractionMessage, User, Em
 
 sys.path.append("../NosBot")
 import logger as log
-import dataManager, emojiDict
+import dataManager, emojiDict, access
 
 
 TEST_GUILDS = []
@@ -40,6 +40,11 @@ class Polls(commands.Cog):
         # Log
         logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: poll " + question + " options: " + str(options) + ".")
 
+        # Return if user doesn't have permission to run command
+        if not access.has_access(interaction.user, interaction.guild, "Create Polls"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission to create polls.", ephemeral=True)
+            return
+
         # Create embed
         embed: Embed = Embed(title=question, color=nextcord.Color.random())
         embed.set_footer(text="Vote using reactions!")
@@ -72,7 +77,6 @@ class Polls(commands.Cog):
         
         # Save polls to file
         dataManager.save_polls(polls)
-        print(polls)
     
 
     @commands.Cog.listener()
@@ -80,8 +84,7 @@ class Polls(commands.Cog):
         # Cancel if there are no polls
         if len(polls) == 0:
             return
-
-        print(event.message_id)
+            
         # Cancel if message isn't a poll
         if not event.message_id in polls.keys():
             return
@@ -115,7 +118,7 @@ class Polls(commands.Cog):
                         new_reaction = reaction
                         new_user = user
         
-        if has_reactions:
+        if has_reactions and new_reaction != None:
             await new_reaction.remove(new_user)
             return
         

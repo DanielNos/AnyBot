@@ -3,6 +3,7 @@ import logger as log
 from os.path import exists
 from os import mkdir
 from commands.roleGivers import RoleGiver
+from shutil import copyfile
 
 logger = log.Logger("./logs/log.txt")
 
@@ -124,3 +125,41 @@ def load_polls() -> dict:
     logger.log_info("Polls data loaded.")
 
     return new_dict
+
+
+def load_permissions(guild_id: int, paged=True):
+    # Check if file exists
+    if guild_id != None and not exists("./data/permissions/" + str(guild_id) + ".json"):
+        logger.log_info("Guild " + str(guild_id) + " command permissions couldn't be found. Creating default configuration.")
+        copyfile("./default/permissions.json", "./data/permissions/" + str(guild_id) + ".json")
+    
+    # Load data
+    if guild_id != None:
+        permissions: dict = json.load(open("./data/permissions/" + str(guild_id) + ".json", encoding="utf-8"))
+    else:
+        permissions: dict = json.load(open("./default/permissions.json", encoding="utf-8"))
+    
+    permissions_per_page = load_config()["permissions_per_page"]
+
+    if not paged:
+        return permissions
+
+    # Split data to pages
+    paged_permissions = []
+    keys = list(permissions.keys())
+    page = {}
+
+    for i in range(1, len(keys)+1):
+        page[keys[i-1]] = permissions[keys[i-1]]
+
+        if i % permissions_per_page == 0:
+            paged_permissions.append(page)
+            page = {}
+
+    return paged_permissions
+
+
+def save_permissions(guild_id: int, permissions: dict):
+    with open("./data/permissions/" + str(guild_id) + ".json", mode="w", encoding="utf-8") as file:
+        file.write(json.dumps(permissions, indent=4))
+        file.close()
