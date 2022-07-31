@@ -85,7 +85,27 @@ class Permissions(commands.Cog):
             return
 
         permissions = dataManager.load_permissions(interaction.guild_id)
-        await interaction.response.send_message(embed=create_embed(permissions), view=PermissionsControls(permissions), ephemeral=show_only_me)
+
+        # Get mentions for roles
+        roles = {}
+
+        for role in interaction.guild.roles:
+            roles[role.name] = role.mention
+        
+        # Change role names to mentions
+        mention_permissions = []
+
+        for page in permissions:
+            new_page = {}
+            for key in page.keys():
+                new_page[key] = []
+
+                for role in page[key]:
+                    new_page[key].append(roles[role])
+
+            mention_permissions.append(new_page)
+
+        await interaction.response.send_message(embed=create_embed(mention_permissions), view=PermissionsControls(mention_permissions), ephemeral=show_only_me)
 
     
     @slash_command(guild_ids=TEST_GUILDS, description="Edit command permission.", force_global=True)
@@ -106,20 +126,16 @@ class Permissions(commands.Cog):
         permissions = dataManager.load_permissions(interaction.guild_id, False)
         values = list(permissions.values())
         keys = list(permissions.keys())
-
-        role_name = role.name
-        if not role_name.startswith("@"):
-            role_name = "@" + role.name
         
         # Return if role is duplicate
         if operation == "add":
             for r in values[setting]:
-                if role_name == r:
+                if role.name == r:
                     await interaction.response.send_message("🚫 FAILED. This role already has permission to " + keys[setting] + ".", ephemeral=True)
                     return
     
         # Return if role isn't there
-        if operation == "remove" and not role_name in values[setting]:
+        if operation == "remove" and not role.name in values[setting]:
             await interaction.response.send_message("🚫 FAILED. This role already doesn't have permission to " + keys[setting] + ".", ephemeral=True)
             return
 
@@ -132,10 +148,10 @@ class Permissions(commands.Cog):
         key = keys[setting]
 
         if operation == "add":
-            permissions[key].append(role_name)
+            permissions[key].append(role.name)
             await interaction.response.send_message("✅ Successfully added permission for " + role.name + " to " + key + ".", ephemeral=True)
         else:
-            permissions[key].remove(role_name)
+            permissions[key].remove(role.name)
             await interaction.response.send_message("✅ Successfully removed permission for " + role.name + " to " + key + ".", ephemeral=True)
         
         # Save it
