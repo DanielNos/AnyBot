@@ -29,6 +29,7 @@ class Utilities(commands.Cog):
 
         embed: Embed = Embed(title="Picked: __" + random.choice(choices.split(" ")) + "__", color=0xFBCE9D)
         embed.add_field(name="Choices:", value=choices, inline=True)
+        
         await interaction.response.send_message(embed=embed)
 
 

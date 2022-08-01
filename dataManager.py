@@ -1,7 +1,7 @@
 import json
 import logger as log
 from os.path import exists
-from os import mkdir
+from os import mkdir, remove
 from commands.roleGivers import RoleGiver
 from shutil import copyfile
 
@@ -163,3 +163,7 @@ def save_permissions(guild_id: int, permissions: dict):
     with open("./data/permissions/" + str(guild_id) + ".json", mode="w", encoding="utf-8") as file:
         file.write(json.dumps(permissions, indent=4))
         file.close()
+
+
+def reset_permissions(guild_id: int):
+    remove("./data/permissions/" + str(guild_id) + ".json")

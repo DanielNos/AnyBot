@@ -92,7 +92,7 @@ class Permissions(commands.Cog):
         for role in interaction.guild.roles:
             roles[role.name] = role.mention
         
-        # Change role names to mentions
+        # Change role names to role mentions
         mention_permissions = []
 
         for page in permissions:
@@ -108,14 +108,14 @@ class Permissions(commands.Cog):
         await interaction.response.send_message(embed=create_embed(mention_permissions), view=PermissionsControls(mention_permissions), ephemeral=show_only_me)
 
     
-    @slash_command(guild_ids=TEST_GUILDS, description="Edit command permission.", force_global=True)
-    async def permission_edit(self, interaction: Interaction,
+    @permissions.subcommand(description="Edit command permission.")
+    async def edit(self, interaction: Interaction,
         setting: int = SlashOption(choices=CHOICES),
         operation: str = SlashOption(choices=["add", "remove"]),
         role: Role = SlashOption()
         ):
         # Log
-        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: permission_edit " + list(CHOICES.keys())[setting] + " " + operation + " @" + role.name + ".")
+        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: permission edit " + list(CHOICES.keys())[setting] + " " + operation + " @" + role.name + ".")
         
         # Return if role is bot managed
         if role.is_bot_managed():
@@ -156,6 +156,18 @@ class Permissions(commands.Cog):
         
         # Save it
         dataManager.save_permissions(interaction.guild_id, permissions)
+    
+    @permissions.subcommand(description="Reset all command permissions to default.")
+    async def reset(self, interaction: Interaction):
+        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: permissions reset.")
+
+        # Return if user doesn't have permission to edit permissions
+        if not access.has_access(interaction.user, interaction.guild, "Edit Permissions"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission to reset command permissions.", ephemeral=True)
+            return
+        
+        dataManager.reset_permissions(interaction.guild_id)
+        await interaction.response.send_message("✅ Successfully reset command permissions to default.", ephemeral=True)
 
 
 def create_embed(permissions, page=0) -> Embed:

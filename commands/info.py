@@ -26,6 +26,7 @@ class Info(commands.Cog):
     async def user_info(self, interaction: Interaction, user: Member = None):
         # Log
         log_message = interaction.user.name + "#" + interaction.user.discriminator + " has called command: user_info"
+        
         if user != None:
             log_message += " " + user.name
         logger.log_info(log_message + ".")
@@ -61,6 +62,7 @@ class Info(commands.Cog):
     async def joined(self, interaction: Interaction, member: nextcord.Member = None):
         # Log
         log_message = interaction.user.name + "#" + interaction.user.discriminator + " has called command: joined"
+
         if member != None:
             log_message += " " + member.name
         logger.log_info(log_message + ".")
