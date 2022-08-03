@@ -183,7 +183,6 @@ class Polls(commands.Cog):
         await message.edit(embed=new_embed)
 
 
-
 def progress_bar(value: float = 0, max: float = 0) -> str:
     if max == 0 or value == 0:
         return "`" + (" " * 30)  +"` | 0% (0)"

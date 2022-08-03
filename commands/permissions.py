@@ -76,7 +76,12 @@ class Permissions(commands.Cog):
     
 
     @slash_command(guild_ids=TEST_GUILDS, description="Show command permissions.", force_global=True)
-    async def permissions(self, interaction: Interaction, show_only_me: bool = False):
+    async def permissions(self, interaction: Interaction):
+        return
+
+
+    @permissions.subcommand(description="Show command permissions.")
+    async def view(self, interaction: Interaction, show_only_me: bool = False):
         logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: permissions.")
         
         # Return if user doesn't have permission to run command
