@@ -44,15 +44,16 @@ class Logger:
         self.log(message, 2)
 
     def __level_to_text(self, level: Level, colored: bool = True):
-        if level == 0:
-            return " [INFO] "
-
         if not colored:
+            if level == 0:
+                return " [INFO] "
             if level == 1:
                 return " [WARNING] "
             if level == 2:
                 return " [ERROR] "
         
+        if level == 0:
+            return Fore.WHITE + "[INFO]" + Fore.WHITE
         if level == 1:
             return Fore.YELLOW + " [WARNING] " + Fore.WHITE
         if level == 2:

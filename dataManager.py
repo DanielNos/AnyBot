@@ -19,7 +19,7 @@ def load_config():
 
 def load_help():
     if not exists("./commands.json"):
-        logger.log_error("Help file couldn't be found. Help command will return empty table.")
+        logger.log_error("Help file couldn't be found. Help command will return empty list.")
         return None
     
     help = json.load(open("./commands.json", encoding="utf-8"))
@@ -108,12 +108,15 @@ def load_polls() -> dict:
     # Check if file exists
     if not exists("./data/polls.json"):
         logger.log_error("Polls file couldn't be found. It will be created.")
+
         if not exists("./data/"):
             mkdir("./data/")
+        
+        if not exists("./data/polls.json"):
             with open("./data/polls.json", mode="w") as file:
                 file.write("{}")
                 file.close()
-        return {}
+            return {}
     
     # Load polls
     polls = json.load(open("./data/polls.json", encoding="utf-8"))
@@ -155,6 +158,9 @@ def load_permissions(guild_id: int, paged=True):
         if i % permissions_per_page == 0:
             paged_permissions.append(page)
             page = {}
+    
+    if len(page.keys()) != 0:
+        paged_permissions.append(page)
 
     return paged_permissions
 
