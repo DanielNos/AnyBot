@@ -53,7 +53,7 @@ class Logger:
                 return " [ERROR] "
         
         if level == 0:
-            return Fore.WHITE + "[INFO]" + Fore.WHITE
+            return Fore.WHITE + " [INFO] " + Fore.WHITE
         if level == 1:
             return Fore.YELLOW + " [WARNING] " + Fore.WHITE
         if level == 2:

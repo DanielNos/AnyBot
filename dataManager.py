@@ -7,6 +7,7 @@ from shutil import copyfile
 
 logger = log.Logger("./logs/log.txt")
 
+
 def load_config():
     if not exists("./config.json"):
         logger.log_error("Config couldn't be found.")
@@ -18,11 +19,11 @@ def load_config():
 
 
 def load_help():
-    if not exists("./commands.json"):
+    if not exists("./help.json"):
         logger.log_error("Help file couldn't be found. Help command will return empty list.")
         return None
     
-    help = json.load(open("./commands.json", encoding="utf-8"))
+    help = json.load(open("./help.json", encoding="utf-8"))
     
     # Format data
     keys = list(help.keys())
@@ -173,3 +174,21 @@ def save_permissions(guild_id: int, permissions: dict):
 
 def reset_permissions(guild_id: int):
     remove("./data/permissions/" + str(guild_id) + ".json")
+
+
+def load_commands():
+    # Check if file exists
+    if not exists("./commands.json"):
+        logger.log_error("Commands file couldn't be found. Commands command will return empty embed.")
+        return {}
+    
+    # Load commands
+    commands = json.load(open("./commands.json", encoding="utf-8"))
+    logger.log_info("Commands data loaded.")
+
+    return commands
+
+
+def is_production() -> bool:
+    config = load_config()
+    return not config["debug"]

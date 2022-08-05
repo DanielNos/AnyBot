@@ -1,24 +1,29 @@
 {
-    "help": "Shows this list of commands. Use /help [command name] for detailed info about a command.",
-
-    "new_rg": "Creates a new role giver.",
-    "del_rg": "Deletes currently edited role giver.",
-    "add_rg_role [role] [*description]": "Adds a role to the currently edited role giver.",
-    "lock_rg": "Locks currently edited role giver and makes it visible to users.",
-
-    "clear [amount]": "Deletes up to 100 messages from current channel.",
-    "user_info [*user]": "Shows information about a specified user. Use without target for your information.",
-    "joined [*member]": "Shows when guild member joined current guild. Use without target for your information.",
-    "new_poll [question] [option 1] [option 2] [*option 3-9]": "Creates a new poll. You have to provide at least two options. You can change reaction emoji by starting the option text with them.",
-    
-    "tictactoe singleplayer [difficulty]": "Starts a game of tic-tac-toe. You have to specify the difficulty of your AI opponent.",
-    "tictactoe multiplayer [opponent]": "Starts a a game of tic-tac-toe against selected opponent.",
-    "tictactoe play [row] [column]": "Places your symbol on selected space. You have to be in a game of tic-tac-toe to use this command and it has to be your turn.",
-    "tictactoe concede": "Concedes your game and lets your opponent win.",
-    
-    "hangman start [expression]": "Starts a game of hangman with your specified expression.",
-    "hangman add_player [player]": "Adds a player to your game of hangman.",
-    "hangman leave": "Leaves a game of hangman.",
-    "hangman guess [letter]": "Guesses a letter in a game of hangman.",
-    "hangman guess_expression [expression]": "Guesses the whole expression in a game of hangman."
+    "Utility": [
+        "help",
+        "user_info",
+        "joined",
+        "clear",
+        "convert",
+        "new_poll"
+    ],
+    "Role Givers": [
+        "new_rg",
+        "del_rg",
+        "add_rg_role",
+        "lock_rg"
+    ],
+    "Tic-Tac-Toe": [
+        "tictactoe singleplayer",
+        "tictactoe multiplayer",
+        "tictactoe play",
+        "tictactoe concede"
+    ],
+    "Hangman": [
+        "hangman start",
+        "hangman add_player",
+        "hangman leave",
+        "hangman guess",
+        "hangman guess_expression"
+    ]
 }

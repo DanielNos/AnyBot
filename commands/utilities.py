@@ -1,4 +1,5 @@
 import sys, random
+from typing import Union
 from nextcord.ext import commands
 from nextcord import SlashOption, slash_command, Interaction, Embed
 
@@ -32,6 +33,19 @@ LENGTH_UNITS = {
 }
 
 
+WEIGHT_UNITS = {
+    "Gt": 15,
+    "Mt": 12,
+    "t": 6,
+    "kg": 3,
+    "dkg": 1,
+    "g": 0,
+    "mg": -3,
+    "µg": -6, "ug": -6,
+    "ng": -9,
+    "pg": -12
+}
+
 
 TEST_GUILDS = []
 logger = None
@@ -63,28 +77,40 @@ class Utilities(commands.Cog):
     @slash_command(guild_ids=TEST_GUILDS, description="Convert a value to a different unit.", force_global=True)
     async def convert(self, interaction: Interaction, value: str, unit: str, new_unit: str = SlashOption(description="The new unit to convert your value to.")):
         value = value.replace(",", ".")
-        
-        # Length M-M
-        if unit in LENGTH_UNITS and new_unit in LENGTH_UNITS:
-            # Return if value isn't float
-            if not is_float(value):
-                await interaction.response.send_message("🚫 FAILED. Can't convert from " + unit + " to " + new_unit + " because " + value + " isn't a valid number.", ephemeral=True)
-                return
 
-            # Calculate
-            number = float(value)
-            factor = LENGTH_UNITS[unit] - LENGTH_UNITS[new_unit]
-
-            result = number * 10.0 ** factor
-            result = format_exponent(result)
-
-            await interaction.response.send_message(value + " " + unit + " = " + result + " " + new_unit)
+        # Return if value isn't float
+        if not is_float(value):
+            await interaction.response.send_message("🚫 FAILED. Can't convert from " + unit + " to " + new_unit + " because " + value + " isn't a valid number.", ephemeral=True)
             return
 
-        await interaction.response.send_message("🚫 FAILED. Can't convert from " + unit + " to " + new_unit + ".", ephemeral=True)
+        #   METRIC - METRIC CONVERSION
+        metric = [LENGTH_UNITS, WEIGHT_UNITS]
+        original_exponent = new_exponent =  None
+
+        for units in metric:
+            if unit in units and new_unit in units:
+                original_exponent = units[unit]
+                new_exponent = units[new_unit]
+
+        # Return if can't convert between units
+        if original_exponent == None or new_exponent == None:
+            await interaction.response.send_message("🚫 FAILED. Can't convert from " + unit + " to " + new_unit + ".", ephemeral=True)
+            return
+        
+        # Calculate
+        result = calculate_metric(value, original_exponent, new_exponent)
+        await interaction.response.send_message(value + " " + unit + " = " + result + " " + new_unit)          
 
 
-def format_exponent(value: float | int) -> str:
+def calculate_metric(value, original_exponent, new_exponent) -> float:
+    number = float(value)
+    difference = original_exponent - new_exponent
+
+    result = number * 10.0 ** difference
+    return format_exponent(result)
+
+
+def format_exponent(value: Union[int, float]) -> str:
     value: str = str(value)
 
     if not "e" in value:
@@ -93,7 +119,6 @@ def format_exponent(value: float | int) -> str:
     number, exponent = value.split("e")
 
     return number + " * 10^" + str(int(exponent))
-    
 
 
 def is_float(value: str) -> bool:

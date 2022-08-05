@@ -9,6 +9,9 @@ import logger as log
 
 TEST_GUILDS = []
 HELP = None
+COMMANDS = None
+PRODUCTION = dataManager.is_production()
+print(PRODUCTION)
 logger = None
 
 
@@ -55,24 +58,40 @@ class Help(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        global HELP, TEST_GUILDS
+        global HELP, TEST_GUILDS, COMMANDS
 
         TEST_GUILDS = dataManager.load_test_guilds()
         HELP = create_help_embeds(*dataManager.load_help())
+        COMMANDS = create_commands_embed(dataManager.load_commands())
     
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Show all commands and their actions. Use /help [command name] for detailed info about command.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="Show all commands and their actions. Use /help [command name] for detailed info about command.", force_global=PRODUCTION)
     async def help(self, interaction: Interaction, command: str = None):
-        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: help.")
+        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: help.")
 
         # Return if help wasn't initialized
-        if HELP == None: 
+        if HELP == None:
             logger.log_error("Help command was called before it was initialized.")
             return
         
+        # Return help
         if command == None:
             await interaction.response.send_message(embed=HELP[0], view=HelpControls())
             return
+        
+        # Return command info
+    
+
+    @slash_command(guild_ids=TEST_GUILDS, description="List all commands.", force_global=PRODUCTION)
+    async def commands(self, interaction: Interaction):
+        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: commands.")
+
+        # Return if commands weren't initialized
+        if COMMANDS == None: 
+            logger.log_error("Commands command was called before it was initialized.")
+            return
+        
+        await interaction.response.send_message(embed=COMMANDS)
 
 
 def create_help_embeds(commands, actions):
@@ -97,6 +116,21 @@ def create_help_embeds(commands, actions):
         embeds[i].set_footer(text=("Page: " + str(i+1) + "/" + str(embed_count)))
 
     return embeds
+
+
+def create_commands_embed(commands) -> Embed:
+    embed: Embed = Embed(title="NosBot Commands List", color=0xFBCE9D)
+    embed.set_thumbnail(url="https://raw.githubusercontent.com/DanielNos/NosBot/main/icons/nosbot.png")
+
+    for key in commands.keys():
+        values = ""
+
+        for value in commands[key]:
+            values += "``" + value + "`` "
+
+        embed.add_field(name=key, value=values, inline=False)
+    
+    return embed
 
 
 def create_embed_template() -> Embed:
