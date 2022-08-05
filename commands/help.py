@@ -7,11 +7,10 @@ sys.path.append("../NosBot")
 import dataManager
 import logger as log
 
-TEST_GUILDS = []
+TEST_GUILDS = dataManager.load_test_guilds()
+PRODUCTION = dataManager.is_production()
 HELP = None
 COMMANDS = None
-PRODUCTION = dataManager.is_production()
-print(PRODUCTION)
 logger = None
 
 
@@ -58,9 +57,8 @@ class Help(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        global HELP, TEST_GUILDS, COMMANDS
+        global HELP, COMMANDS
 
-        TEST_GUILDS = dataManager.load_test_guilds()
         HELP = create_help_embeds(*dataManager.load_help())
         COMMANDS = create_commands_embed(dataManager.load_commands())
     

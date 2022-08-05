@@ -7,6 +7,7 @@ import emojiDict, dataManager, access
 import logger as log
 
 TEST_GUILDS = []
+PRODUCTION = False
 logger = None
 
 blueprints = {}
@@ -36,12 +37,14 @@ class RoleGivers(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        global role_givers, TEST_GUILDS
-        role_givers = dataManager.load_role_givers()
+        global role_givers, TEST_GUILDS, PRODUCTION
+        
+        PRODUCTION = dataManager.is_production()
         TEST_GUILDS = dataManager.load_test_guilds()
+        role_givers = dataManager.load_role_givers()
 
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Create a new role giver.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="Create a new role giver.", force_global=PRODUCTION)
     async def new_rg(self, interaction: Interaction):
         logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: new_rg.")
 
@@ -62,7 +65,7 @@ class RoleGivers(commands.Cog):
             await interaction.response.send_message("🚫 FAILED. You already have an unfinished role giver! Complete it or delete it using /del_rg.", ephemeral=True)
 
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Delete currently edited role giver.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="Delete currently edited role giver.", force_global=PRODUCTION)
     async def del_rg(self, interaction: Interaction):
         logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: del_rg.")
 
@@ -122,7 +125,7 @@ class RoleGivers(commands.Cog):
         await interaction.response.send_message("✅ Successfully locked role giver. It can now give roles to users.", ephemeral=True)
 
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Add role to role giver.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="Add role to role giver.", force_global=PRODUCTION)
     async def add_rg_role(self, interaction: Interaction, role: Role, description: str = ""):
         logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: add_rg_role " + role.name + ".")
         

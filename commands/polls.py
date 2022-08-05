@@ -7,7 +7,8 @@ import logger as log
 import dataManager, emojiDict, access
 
 
-TEST_GUILDS = []
+TEST_GUILDS = dataManager.load_test_guilds()
+PRODUCTION = dataManager.is_production()
 logger = None
 polls = {}
 
@@ -21,13 +22,11 @@ class Polls(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        global TEST_GUILDS, polls
-
-        TEST_GUILDS = dataManager.load_test_guilds()
+        global polls
         polls = dataManager.load_polls()
 
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Create a poll.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="Create a poll.", force_global=PRODUCTION)
     async def new_poll(self, interaction: Interaction, question: str, 
     option1: str, option2: str, option3: str = None, option4: str = None, option5: str = None, option6: str = None, 
     option7: str = None, option8: str = None, option9: str = None):

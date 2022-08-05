@@ -1,12 +1,13 @@
 import sys
 from nextcord.ext import commands
-from nextcord import ui, Role, SlashOption, Embed, Interaction, ButtonStyle, Member, slash_command
+from nextcord import ui, Role, SlashOption, Embed, Interaction, ButtonStyle, slash_command
 
 sys.path.append("../NosBot")
 import logger as log
 import dataManager, access
 
-TEST_GUILDS = []
+TEST_GUILDS = dataManager.load_test_guilds()
+PRODUCTION = dataManager.is_production()
 logger = None
 PERMISSIONS_PER_PAGE = 0
 
@@ -70,12 +71,11 @@ class Permissions(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        global TEST_GUILDS, PERMISSIONS_PER_PAGE, ADMIN_ACCOUNTS
-        TEST_GUILDS = dataManager.load_test_guilds()
+        global ADMIN_ACCOUNTS     
         ADMIN_ACCOUNTS = dataManager.load_config()["admin_accounts"]
     
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Show command permissions.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="Show command permissions.", force_global=PRODUCTION)
     async def permissions(self, interaction: Interaction):
         return
 

@@ -9,9 +9,12 @@ import dataManager, access
 import logger as log
 
 EMPTY_BOARD = "▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▫️▫️▫️▫️▫️▫️▫️▫️▫️▫️▫️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▫️▫️▫️▫️▫️▫️▫️▫️▫️▫️▫️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n▪️▪️▪️▫️▪️▪️▪️▫️▪️▪️▪️\n"
-TEST_GUILDS = []
+
 INFO_DELETE_TIME = 6
 WINNER_DELETE_TIME = 20
+
+TEST_GUILDS = dataManager.load_test_guilds()
+PRODUCTION = dataManager.is_production()
 
 logger = None
 games = {}
@@ -137,13 +140,7 @@ class TicTacToe(commands.Cog):
         logger = log.Logger("./logs/log.txt")
 
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        global TEST_GUILDS
-        TEST_GUILDS = dataManager.load_test_guilds()
-
-
-    @slash_command(guild_ids=TEST_GUILDS, description="none", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="none", force_global=PRODUCTION)
     async def tictactoe(self, interaction: Interaction):
         return
     

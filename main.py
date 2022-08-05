@@ -3,7 +3,7 @@ import nextcord, dataManager, sys
 from nextcord.ext import commands
 
 sys.path.append("./commands/")
-import roleGivers, help, clear, info, utilities, polls, permissions
+import roleGivers, help, clear, info, utilities, polls, permissions, welcome
 
 sys.path.append("./commands/games/")
 import tictactoe, hangman
@@ -20,6 +20,7 @@ intents = nextcord.Intents.default()
 intents.guild_messages = True
 intents.message_content = True
 intents.guild_reactions = True
+intents.members = True
 
 client = commands.Bot(command_prefix="?", intents=intents)
 
@@ -31,6 +32,7 @@ info.load(client)
 utilities.load(client)
 polls.load(client)
 permissions.load(client)
+welcome.load(client)
 
 # Load Games
 tictactoe.load(client)

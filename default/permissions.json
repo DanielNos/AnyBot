@@ -4,5 +4,6 @@
     "Manage Role Givers": [],
     "Use Clear": [],
     "Create Polls": ["@everyone"],
-    "Start Games": ["@everyone"]
+    "Start Games": ["@everyone"],
+    "Manage Welcome Message": []
 }

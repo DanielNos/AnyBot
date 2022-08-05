@@ -6,8 +6,10 @@ sys.path.append("../NosBot")
 import logger as log
 import dataManager
 
-TEST_GUILDS = []
+TEST_GUILDS = dataManager.load_test_guilds()
+PRODUCTION = dataManager.is_production()
 logger = None
+
 
 class Info(commands.Cog):
     def __init__(self, client: commands.Bot):
@@ -16,13 +18,7 @@ class Info(commands.Cog):
         logger = log.Logger("./logs/log.txt")
     
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        global TEST_GUILDS
-        TEST_GUILDS = dataManager.load_test_guilds()
-    
-
-    @slash_command(guild_ids=TEST_GUILDS, description="Show information about a user. If no target is specified target will be author.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="Show information about a user. If no target is specified target will be author.", force_global=PRODUCTION)
     async def user_info(self, interaction: Interaction, user: Member = None):
         # Log
         log_message = interaction.user.name + "#" + interaction.user.discriminator + " has called command: user_info"
@@ -58,7 +54,7 @@ class Info(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Says when a member joined.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="Says when a member joined.", force_global=PRODUCTION)
     async def joined(self, interaction: Interaction, member: nextcord.Member = None):
         # Log
         log_message = interaction.user.name + "#" + interaction.user.discriminator + " has called command: joined"

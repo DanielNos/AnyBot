@@ -32,14 +32,16 @@ LENGTH_UNITS = {
     "Y": 24
 }
 
-
 WEIGHT_UNITS = {
     "Gt": 15,
     "Mt": 12,
     "t": 6,
     "kg": 3,
-    "dkg": 1,
+    "hg": 2,
+    "dkg": 1, "dag": 1,
     "g": 0,
+    "dg": -1,
+    "cg": -2,
     "mg": -3,
     "µg": -6, "ug": -6,
     "ng": -9,
@@ -47,7 +49,8 @@ WEIGHT_UNITS = {
 }
 
 
-TEST_GUILDS = []
+TEST_GUILDS = dataManager.load_test_guilds()
+PRODUCTION = dataManager.is_production()
 logger = None
 
 
@@ -57,14 +60,8 @@ class Utilities(commands.Cog):
         global logger
         logger = log.Logger("./logs/log.txt")
 
-    
-    @commands.Cog.listener()
-    async def on_ready(self):
-        global TEST_GUILDS
-        TEST_GUILDS = dataManager.load_test_guilds()
 
-
-    @slash_command(guild_ids=TEST_GUILDS, description="Chooses between multiple choices.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="Chooses between multiple choices.", force_global=PRODUCTION)
     async def choose(self, interaction: Interaction, choices: str):
         logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: choose " + choices + ".")
 
@@ -74,40 +71,76 @@ class Utilities(commands.Cog):
         await interaction.response.send_message(embed=embed)
     
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Convert a value to a different unit.", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="Convert a value to a different unit.", force_global=PRODUCTION)
     async def convert(self, interaction: Interaction, value: str, unit: str, new_unit: str = SlashOption(description="The new unit to convert your value to.")):
+        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: convert " + value + " " + unit + " " + new_unit + ".")
+        
+        # Return if value isn't float
         value = value.replace(",", ".")
 
-        # Return if value isn't float
         if not is_float(value):
             await interaction.response.send_message("🚫 FAILED. Can't convert from " + unit + " to " + new_unit + " because " + value + " isn't a valid number.", ephemeral=True)
             return
 
-        #   METRIC - METRIC CONVERSION
+        # METRIC - METRIC CONVERSION
         metric = [LENGTH_UNITS, WEIGHT_UNITS]
-        original_exponent = new_exponent =  None
 
         for units in metric:
             if unit in units and new_unit in units:
-                original_exponent = units[unit]
-                new_exponent = units[new_unit]
-
-        # Return if can't convert between units
-        if original_exponent == None or new_exponent == None:
-            await interaction.response.send_message("🚫 FAILED. Can't convert from " + unit + " to " + new_unit + ".", ephemeral=True)
-            return
+                result = calculate_metric(value, units[unit], units[new_unit])
+                await interaction.response.send_message(value + " " + unit + " = " + result + " " + new_unit)
+                return
         
-        # Calculate
-        result = calculate_metric(value, original_exponent, new_exponent)
-        await interaction.response.send_message(value + " " + unit + " = " + result + " " + new_unit)          
+        # TEMPERATURE CONVERSION
+        value = float(value)
+        if unit.lower() == "°k":
+            unit = "K"
+        if new_unit.lower() == "°k":
+            new_unit = "K"
+
+        result = convert_temperature(value, unit.lower(), new_unit.lower())
+        if result != None:
+            await interaction.response.send_message(str(value) + " " + unit + " = " + result + " " + new_unit)
+            return
+
+        # Can't convert between units
+        await interaction.response.send_message("🚫 FAILED. Can't convert from " + unit + " to " + new_unit + ".", ephemeral=True)  
 
 
-def calculate_metric(value, original_exponent, new_exponent) -> float:
+def calculate_metric(value: str, original_exponent: int, new_exponent: int) -> float:
     number = float(value)
     difference = original_exponent - new_exponent
 
     result = number * 10.0 ** difference
     return format_exponent(result)
+
+
+def convert_temperature(value: float, original_unit: str, new_unit: str) -> str:
+        # Fahrenheit to Celsius
+        if original_unit == "°f" and new_unit == "°c":
+            return str((value - 32.0) / 1.8)
+        
+        # Celsius to Fahrenheit
+        if original_unit == "°c" and new_unit == "°f":
+            return str((value * 1.8) + 32.0)
+        
+        # Celsius to Kelvin
+        if original_unit == "°c" and new_unit == "k":
+            return str(value + 273.15)
+        
+        # Kelvin to Celsius
+        if original_unit == "k" and new_unit == "°c":
+            return str(value - 273.15)
+        
+        # Fahrenheit to Kelvin
+        if original_unit == "°f" and new_unit == "k":
+            return str(((value - 32) / 1.8) + 273.15)
+        
+        # Kelvin to Fahrenheit
+        if original_unit == "k" and new_unit == "°f":
+            return str(((value - 273.15) * 1.8) + 32)
+
+        return None
 
 
 def format_exponent(value: Union[int, float]) -> str:

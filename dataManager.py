@@ -192,3 +192,41 @@ def load_commands():
 def is_production() -> bool:
     config = load_config()
     return not config["debug"]
+
+
+def load_welcome_message(guild_id: int) -> str:
+    # Check if directory exists
+    if not exists("./data/welcome_messages/"):
+        mkdir("./data/welcome_messages/")
+
+    # Check if file exists
+    if not exists("./data/welcome_messages/" + str(guild_id) + ".json"):
+        return None
+    
+    # Load data
+    message: dict = json.load(open("./data/welcome_messages/" + str(guild_id) + ".json", encoding="utf-8"))
+    return message["message"]
+
+
+def save_welcome_message(guild_id: int, message: str):
+    # Check if directory exists
+    if not exists("./data/welcome_messages/"):
+        mkdir("./data/welcome_messages/")
+
+    message_dict = {}
+    message_dict["message"] = message
+
+    # Save data
+    with open("./data/welcome_messages/" + str(guild_id) + ".json", mode="w", encoding="utf-8") as file:
+        file.write(json.dumps(message_dict, indent=4))
+        file.close()
+
+
+def remove_welcome_message(guild_id: int):
+    # Check if directory exists
+    if not exists("./data/welcome_messages/"):
+        mkdir("./data/welcome_messages/")
+    
+    # Remove it
+    if exists("./data/welcome_messages/" + str(guild_id) + ".json"):
+        remove("./data/welcome_messages/" + str(guild_id) + ".json")

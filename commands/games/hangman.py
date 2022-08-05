@@ -14,7 +14,9 @@ PLAYER_LEAVE_IDT = 10
 INCORRECT_GUESS_IDT = 5
 CORRECT_GUESS_IDT = 10
 
-TEST_GUILDS = []
+TEST_GUILDS = dataManager.load_test_guilds()
+PRODUCTION = dataManager.is_production()
+
 logger = None
 
 users_in_games = {}
@@ -108,13 +110,7 @@ class Hangman(commands.Cog):
         logger = log.Logger("./logs/log.txt")
     
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        global TEST_GUILDS
-        TEST_GUILDS = dataManager.load_test_guilds()
-    
-
-    @slash_command(guild_ids=TEST_GUILDS, description="none", force_global=True)
+    @slash_command(guild_ids=TEST_GUILDS, description="none", force_global=PRODUCTION)
     async def hangman(self, interaction: Interaction):
         return
 
