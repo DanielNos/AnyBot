@@ -163,8 +163,8 @@ class Hangman(commands.Cog):
         game = Game(interaction.user, legal_expression)
 
         response: PartialInteractionMessage = await interaction.response.send_message(embed=game.create_embed())
-
         game.message = await response.fetch()
+        
         users_in_games[interaction.user.id] = game
         game_messages[game.message.id] = game.creator.id
     

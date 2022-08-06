@@ -25,5 +25,10 @@
         "hangman leave",
         "hangman guess",
         "hangman guess_expression"
+    ],
+    "Welcome Message": [
+        "welcome_message set",
+        "welcome_message show",
+        "welcome_message remove"
     ]
 }

@@ -2,7 +2,7 @@ import sys
 from random import randint
 from math import floor
 from nextcord.ext import commands
-from nextcord import slash_command, Interaction, SlashOption, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
+from nextcord import slash_command, PartialInteractionMessage, Interaction, SlashOption, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
 
 sys.path.append("../../NosBot")
 import dataManager, access
@@ -191,18 +191,9 @@ class TicTacToe(commands.Cog):
 
         # Create a new game
         game = Game(interaction.user, opponent=self.client.user, difficulty=difficulty)
-        await interaction.response.send_message(embed=game.get_render())
 
-        # Find game message
-        async for message in interaction.channel.history(limit=25, oldest_first=False):
-            if message.author.id != self.client.user.id or not message.embeds or not message.embeds[0].thumbnail:
-                continue
-        
-            if message.embeds[0].thumbnail.url != "https://raw.githubusercontent.com/DanielNos/NosBot/main/icons/tictactoe.png":
-                continue
-            
-            game.message = message
-            break
+        message: PartialInteractionMessage = await interaction.response.send_message(embed=game.get_render())
+        game.message = await message.fetch()    
 
         # Store game data
         games[game.player.id] = game
@@ -217,7 +208,6 @@ class TicTacToe(commands.Cog):
         if not access.has_access(interaction.user, interaction.guild, "Start Games"):
             await interaction.response.send_message("🚫 FAILED. You don't have permission to start games.", ephemeral=True)
             return
-
 
         # Return if users are in a game
         if interaction.user.id in games.keys():
@@ -235,18 +225,9 @@ class TicTacToe(commands.Cog):
 
         # Create a new game
         game = Game(interaction.user, opponent)
-        await interaction.response.send_message(embed=game.get_render())
 
-        # Find game message
-        async for message in interaction.channel.history(limit=20, oldest_first=False):
-            if message.author.id != self.client.user.id or not message.embeds or not message.embeds[0].thumbnail:
-                continue
-        
-            if message.embeds[0].thumbnail.url != "https://raw.githubusercontent.com/DanielNos/NosBot/main/icons/tictactoe.png":
-                continue
-            
-            game.message = message
-            break
+        message: PartialInteractionMessage = await interaction.response.send_message(embed=game.get_render())
+        game.message = await message.fetch()
 
         # Store game data
         games[game.player.id] = game
