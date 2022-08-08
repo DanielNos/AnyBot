@@ -3,7 +3,7 @@
     "Edit Permissions": [],
     "Manage Role Givers": [],
     "Use Clear": [],
-    "Create Polls": ["@everyone"],
+    "Manage Polls": ["@everyone"],
     "Start Games": ["@everyone"],
     "Manage Welcome Message": []
 }

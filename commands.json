@@ -5,7 +5,8 @@
         "joined",
         "clear",
         "convert",
-        "new_poll"
+        "new_poll",
+        "lock_poll"
     ],
     "Role Givers": [
         "new_rg",

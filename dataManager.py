@@ -98,37 +98,52 @@ def load_test_guilds():
     return config["test_guilds"]
 
 
-def save_polls(polls: dict):
+def save_polls(polls: dict, poll_ids: dict):
     # Save
     with open("./data/polls.json", mode="w", encoding="utf-8") as file:
         file.write(json.dumps(polls))
         file.close()
+    
+    with open("./data/poll_ids.json", mode="w", encoding="utf-8") as file:
+        file.write(json.dumps(poll_ids))
+        file.close()
 
 
-def load_polls() -> dict:
-    # Check if file exists
+def load_polls():
+    if not exists("./data/"):
+        mkdir("./data/")
+
+    # Check if polls file exists
     if not exists("./data/polls.json"):
         logger.log_error("Polls file couldn't be found. It will be created.")
-
-        if not exists("./data/"):
-            mkdir("./data/")
         
         if not exists("./data/polls.json"):
             with open("./data/polls.json", mode="w") as file:
                 file.write("{}")
                 file.close()
-            return {}
-    
+
+    # Check if poll ids file exists
+    if not exists("./data/poll_ids.json"):
+        logger.log_error("Poll IDs file couldn't be found. It will be created.")
+
+        if not exists("./data/poll_ids.json"):
+            with open("./data/poll_ids.json", mode="w") as file:
+                file.write("{}")
+                file.close()
+                    
     # Load polls
     polls = json.load(open("./data/polls.json", encoding="utf-8"))
     new_dict = {}
 
     for message_id in polls.keys():
         new_dict[int(message_id)] = polls[message_id]
+    
+    # Load poll ids
+    poll_ids = json.load(open("./data/poll_ids.json", encoding="utf-8"))
 
     logger.log_info("Polls data loaded.")
 
-    return new_dict
+    return (new_dict, poll_ids)
 
 
 def load_permissions(guild_id: int, paged=True):
