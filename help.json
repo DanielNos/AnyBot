@@ -11,7 +11,7 @@
     "joined [*member]": "Shows when guild member joined current guild. Use without target for your information.",
     "convert [value] [unit] [new_unit]": "Converts value from one unit to another.",
 
-    "new_poll [question] [option 1] [option 2] [*options 3-9]": "Creates a new poll. You have to provide at least two options. You can change reaction emoji by starting the option text with them.",
+    "new_poll [question] [allow changing votes] [option 1] [option 2] [*options 3-9]": "Creates a new poll. You have to provide at least two options. You can change reaction emoji by starting the option text with them.",
     "lock_poll [poll ID]": "Locks specified poll preventing users from voting anymore.",
 
     "tictactoe singleplayer [difficulty]": "Starts a game of tic-tac-toe. You have to specify the difficulty of your AI opponent.",

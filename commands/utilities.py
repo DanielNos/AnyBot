@@ -48,6 +48,25 @@ WEIGHT_UNITS = {
     "pg": -12
 }
 
+AREA_UNITS = {
+    "km2": 6, "km²": 6,
+    "ha": 4,
+    "ar": 2,
+    "m2": 0, "m²": 0,
+    "dm2": -2, "dm²": -2,
+    "cm2": -4, "cm²": -4,
+    "mm2": -6, "mm²": -6
+}
+
+VOLUME_UNITS = {
+    "km3": 9, "km³": 9,
+    "cl": 2,
+    "dl": 1,
+    "m3": 0, "m³": 0,
+    "dm3": -3, "dm³": -3, "l": -3,
+    "cm3": -6, "cm³": -6, "ml": -6, 
+    "mm3": -9, "mm³": -9
+}
 
 TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
@@ -83,7 +102,7 @@ class Utilities(commands.Cog):
             return
 
         # METRIC - METRIC CONVERSION
-        metric = [LENGTH_UNITS, WEIGHT_UNITS]
+        metric = [LENGTH_UNITS, WEIGHT_UNITS, AREA_UNITS, VOLUME_UNITS]
 
         for units in metric:
             if unit in units and new_unit in units:

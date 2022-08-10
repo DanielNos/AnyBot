@@ -5,6 +5,7 @@ from nextcord import slash_command, Message, Interaction, RawMessageDeleteEvent,
 sys.path.append("../NosBot")
 import emojiDict, dataManager, access
 import logger as log
+from dataClasses import RoleGiver
 
 TEST_GUILDS = []
 PRODUCTION = False
@@ -12,20 +13,6 @@ logger = None
 
 blueprints = {}
 role_givers = {}
-
-class RoleGiver():
-    def __init__(self, message_id: int, role_ids = []):
-        self.message_id = message_id
-        self.role_ids = role_ids
-    
-    def to_json(self):
-        return {
-            "message_id": self.message_id,
-            "role_ids": self.role_ids
-        }
-    
-    def __str__(self):
-        return "RoleGiver{message_id=" + str(self.message_id) + ", role_ids=" + str(self.role_ids) + "}"
 
 
 class RoleGivers(commands.Cog):

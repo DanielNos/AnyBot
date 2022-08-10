@@ -2,8 +2,8 @@ import json
 import logger as log
 from os.path import exists
 from os import mkdir, remove
-from commands.roleGivers import RoleGiver
 from shutil import copyfile
+from dataClasses import Poll, RoleGiver
 
 logger = log.Logger("./logs/log.txt")
 
@@ -99,9 +99,14 @@ def load_test_guilds():
 
 
 def save_polls(polls: dict, poll_ids: dict):
+    # Format
+    polls_dict = { }
+    for key in polls.keys():
+        polls_dict[key] = polls[key].to_json()
+
     # Save
     with open("./data/polls.json", mode="w", encoding="utf-8") as file:
-        file.write(json.dumps(polls))
+        file.write(json.dumps(polls_dict))
         file.close()
     
     with open("./data/poll_ids.json", mode="w", encoding="utf-8") as file:
@@ -132,11 +137,17 @@ def load_polls():
                 file.close()
                     
     # Load polls
-    polls = json.load(open("./data/polls.json", encoding="utf-8"))
+    polls = json.load(open("./data/polls.json", encoding="utf-8"))["polls"]
     new_dict = {}
 
     for message_id in polls.keys():
-        new_dict[int(message_id)] = polls[message_id]
+        poll = polls[message_id]
+        
+        voted = []
+        for user in poll["voted"]:
+            voted.append(int(user))
+
+        new_dict[int(message_id)] = Poll(poll["emojis"], poll["can_change_votes"], voted)
     
     # Load poll ids
     poll_ids = json.load(open("./data/poll_ids.json", encoding="utf-8"))

@@ -1,11 +1,12 @@
 import sys, nextcord, emoji
 from random import randint
 from nextcord.ext import commands
-from nextcord import slash_command, Message, PartialInteractionMessage, User, Embed, Interaction, Reaction, RawMessageDeleteEvent
+from nextcord import slash_command, SlashOption, Message, PartialInteractionMessage, User, Embed, Interaction, Reaction, RawMessageDeleteEvent
 
 sys.path.append("../NosBot")
 import logger as log
 import dataManager, emojiDict, access
+from dataClasses import Poll
 
 
 TEST_GUILDS = dataManager.load_test_guilds()
@@ -26,8 +27,8 @@ class Polls(commands.Cog):
 
 
     @slash_command(guild_ids=TEST_GUILDS, description="Create a poll.", force_global=PRODUCTION)
-    async def new_poll(self, interaction: Interaction, question: str, 
-    option1: str, option2: str, option3: str = None, option4: str = None, option5: str = None, option6: str = None, 
+    async def new_poll(self, interaction: Interaction, question: str, allow_changing_votes: str = SlashOption(choices=["Yes", "No"]),
+    option1: str = SlashOption(), option2: str = SlashOption(), option3: str = None, option4: str = None, option5: str = None, option6: str = None, 
     option7: str = None, option8: str = None, option9: str = None):
 
         # Remove not used options
@@ -68,7 +69,7 @@ class Polls(commands.Cog):
         # Send message and save it
         response: PartialInteractionMessage = await interaction.response.send_message(embed=embed)
         message: Message = await response.fetch()
-        self.polls[message.id] = emojis
+        self.polls[message.id] = Poll(emojis, allow_changing_votes == "Yes")
         self.poll_ids[poll_id] = message.id
 
         # Add reactions
@@ -118,14 +119,22 @@ class Polls(commands.Cog):
 
         # Remove reaction if it isn't valid
         message: Message = await self.client.get_channel(event.channel_id).fetch_message(event.message_id)
+        poll: Poll = self.polls[event.message_id]
 
-        if event.user_id != self.client.user.id and not event.emoji.name in self.polls[event.message_id]:
+        if event.user_id != self.client.user.id and not event.emoji.name in poll.emojis:
             for reaction in message.reactions:
                 if str(reaction.emoji) == str(event.emoji.name):
                     await message.remove_reaction(emoji=reaction, member=event.member)
                     return
             return
         
+        # Remove reaction if user already voted and changing votes isn't allowed
+        if not poll.can_change_votes and event.user_id in poll.voted:
+            for reaction in message.reactions:
+                if str(reaction.emoji) == str(event.emoji.name):
+                    await message.remove_reaction(emoji=reaction, member=event.member)
+                    return
+            return
         
         # Remove reaction if user already has reacted
         has_reactions = False
@@ -146,6 +155,7 @@ class Polls(commands.Cog):
             return
         
         # Update poll
+        self.polls[event.message_id].voted.append(event.user_id)
         await self.update_poll(message)
 
 
@@ -163,6 +173,11 @@ class Polls(commands.Cog):
         if event.user_id == self.client.user.id:
             return
         
+        # Cancel if poll doesn't allow changing votes
+        poll: Poll = self.polls[event.message_id]
+        if not poll.can_change_votes:
+            return
+
         # Update poll
         message: Message = await self.client.get_channel(event.channel_id).fetch_message(event.message_id)
         await self.update_poll(message)
