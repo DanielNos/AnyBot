@@ -1,7 +1,8 @@
 import sys
 from unidecode import unidecode
 from nextcord.ext import commands
-from nextcord import PartialInteractionMessage, slash_command, Interaction, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
+from nextcord import slash_command, SlashOption, PartialInteractionMessage, Interaction, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
+from random import choice
 
 sys.path.append("../../NosBot")
 import dataManager, emojiDict, access
@@ -16,11 +17,13 @@ CORRECT_GUESS_IDT = 10
 
 TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
+PACKS = dataManager.load_hangman_packs()
 
 logger = None
 
 users_in_games = {}
 game_messages = {}
+
 
 class Game:
     def __init__(self, creator: User, expression: str):
@@ -39,8 +42,8 @@ class Game:
         # Expression
         expression = "```\n"
         for i in range(len(self.expression)):
-            if self.expression[i] == " ":
-                expression += "  "
+            if self.expression[i] in "' ":
+                expression += self.expression[i] + " "
             else:
                 if not self.letters[LETTERS.index(self.expression[i].lower())]:
                     expression += "_ "
@@ -139,10 +142,7 @@ class Hangman(commands.Cog):
         await interaction.response.send_message("ℹ️ " + interaction.user.name + "#" + interaction.user.discriminator + " has left " + game.creator.name + "'s game of hangman.", delete_after=PLAYER_LEAVE_IDT)
 
 
-    @hangman.subcommand(description="Start a game of hangman.")
-    async def start(self, interaction: Interaction, expression: str):
-        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: hangman start " + expression + ".")
-
+    async def start_game(self, interaction: Interaction, expression: str):
         # Return if user doesn't have permission to run command
         if not access.has_access(interaction.user, interaction.guild, "Start Games"):
             await interaction.response.send_message("🚫 FAILED. You don't have permission to start games.", ephemeral=True)
@@ -153,21 +153,34 @@ class Hangman(commands.Cog):
             await interaction.response.send_message("🚫 Failed. You are already in a game of hangman. You can leave it using /hangman leave.", ephemeral=True)
             return
 
-        # Remove illegal characters from expression
-        legal_expression = ""
-        for ch in unidecode(expression):
-            if ch in "abcdefghijklmnopqrstuvwxyz ":
-                legal_expression += ch
-
         # Create game
-        game = Game(interaction.user, legal_expression)
+        game = Game(interaction.user, expression)
 
         response: PartialInteractionMessage = await interaction.response.send_message(embed=game.create_embed())
         game.message = await response.fetch()
         
         users_in_games[interaction.user.id] = game
         game_messages[game.message.id] = game.creator.id
+
+
+    @hangman.subcommand(description="Start a game of hangman.")
+    async def start(self, interaction: Interaction, expression: str):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: hangman start " + expression + ".")
+
+        # Remove illegal characters from expression
+        legal_expression = ""
+        for ch in unidecode(expression.lower()):
+            if ch in "abcdefghijklmnopqrstuvwxyz ":
+                legal_expression += ch
+        
+        await self.start_game(interaction, legal_expression)
     
+    @hangman.subcommand(description="Start a game of hangman.")
+    async def start_expression_pack(self, interaction: Interaction, expression_pack: str = SlashOption(choices=PACKS.keys())):
+        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: hangman start_expression_pack " + expression_pack + ".")
+        
+        await self.start_game(interaction, choice(PACKS[expression_pack]))
+
 
     @hangman.subcommand(description="Guess a letter in a game of hangman.")
     async def guess(self, interaction: Interaction, letter: str):

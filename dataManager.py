@@ -1,9 +1,10 @@
 import json
 import logger as log
 from os.path import exists
-from os import mkdir, remove
+from os import mkdir, remove, listdir
 from shutil import copyfile
 from dataClasses import Poll, RoleGiver
+
 
 logger = log.Logger("./logs/log.txt")
 
@@ -19,11 +20,11 @@ def load_config():
 
 
 def load_help():
-    if not exists("./help.json"):
+    if not exists("./command_data/help/help.json"):
         logger.log_error("Help file couldn't be found. Help command will return empty list.")
         return None
     
-    help = json.load(open("./help.json", encoding="utf-8"))
+    help = json.load(open("./command_data/help/help.json", encoding="utf-8"))
     
     # Format data
     keys = list(help.keys())
@@ -137,7 +138,7 @@ def load_polls():
                 file.close()
                     
     # Load polls
-    polls = json.load(open("./data/polls.json", encoding="utf-8"))["polls"]
+    polls = json.load(open("./data/polls.json", encoding="utf-8"))
     new_dict = {}
 
     for message_id in polls.keys():
@@ -204,12 +205,12 @@ def reset_permissions(guild_id: int):
 
 def load_commands():
     # Check if file exists
-    if not exists("./commands.json"):
+    if not exists("./command_data/help/commands.json"):
         logger.log_error("Commands file couldn't be found. Commands command will return empty embed.")
         return {}
     
     # Load commands
-    commands = json.load(open("./commands.json", encoding="utf-8"))
+    commands = json.load(open("./command_data/help/commands.json", encoding="utf-8"))
     logger.log_info("Commands data loaded.")
 
     return commands
@@ -256,3 +257,19 @@ def remove_welcome_message(guild_id: int):
     # Remove it
     if exists("./data/welcome_messages/" + str(guild_id) + ".json"):
         remove("./data/welcome_messages/" + str(guild_id) + ".json")
+
+
+def load_hangman_packs():
+    # Load packs
+    files = []
+    for file in listdir("./command_data/hangman/"):
+        files.append(json.load(open("./command_data/hangman/" + file)))
+
+    # Format data
+    packs = {}
+    for file in files:
+        packs[file["name"]] = file["expressions"]
+    
+    logger.log_info("Hangman data loaded.")
+
+    return packs
