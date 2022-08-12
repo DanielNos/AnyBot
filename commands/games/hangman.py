@@ -9,6 +9,7 @@ import dataManager, emojiDict, access
 import logger as log
 
 LETTERS = list("abcdefghijklmnopqrstuvwxyz")
+ALLOWED_CHARS = ":-' "
 PLAYER_ADD_IDT = 5
 GUESS_IDT = 5
 PLAYER_LEAVE_IDT = 10
@@ -42,7 +43,7 @@ class Game:
         # Expression
         expression = "```\n"
         for i in range(len(self.expression)):
-            if self.expression[i] in "' ":
+            if self.expression[i] in ALLOWED_CHARS:
                 expression += self.expression[i] + " "
             else:
                 if not self.letters[LETTERS.index(self.expression[i].lower())]:
@@ -73,7 +74,7 @@ class Game:
         embed.add_field(name="Players:", value=players[:-1], inline=False)
 
         # Icon
-        embed.set_thumbnail("https://raw.githubusercontent.com/DanielNos/NosBot/main/icons/hangman" + str(self.wrong_guesses) + ".png")
+        embed.set_thumbnail("https://raw.githubusercontent.com/4lt3rnative/nosbot/main/hangman" + str(self.wrong_guesses) + ".png")
 
         # Creator
         embed.set_footer(text="Creator: " + self.creator.name + "#" + self.creator.discriminator)
@@ -100,7 +101,7 @@ class Game:
         # Try to recreate expression with guessed letters
         complete_expression = ""
         for letter in self.expression.lower():
-            if letter in used_letters or letter == " ":
+            if letter in used_letters or letter in ALLOWED_CHARS:
                 complete_expression += letter
         
         return complete_expression == self.expression.lower()
@@ -142,7 +143,7 @@ class Hangman(commands.Cog):
         await interaction.response.send_message("ℹ️ " + interaction.user.name + "#" + interaction.user.discriminator + " has left " + game.creator.name + "'s game of hangman.", delete_after=PLAYER_LEAVE_IDT)
 
 
-    async def start_game(self, interaction: Interaction, expression: str):
+    async def start_game(self, interaction: Interaction, expression: str, from_pack = False):
         # Return if user doesn't have permission to run command
         if not access.has_access(interaction.user, interaction.guild, "Start Games"):
             await interaction.response.send_message("🚫 FAILED. You don't have permission to start games.", ephemeral=True)
@@ -155,6 +156,8 @@ class Hangman(commands.Cog):
 
         # Create game
         game = Game(interaction.user, expression)
+        if from_pack:
+            game.players.append(interaction.user)
 
         response: PartialInteractionMessage = await interaction.response.send_message(embed=game.create_embed())
         game.message = await response.fetch()
@@ -170,10 +173,11 @@ class Hangman(commands.Cog):
         # Remove illegal characters from expression
         legal_expression = ""
         for ch in unidecode(expression.lower()):
-            if ch in "abcdefghijklmnopqrstuvwxyz ":
+            if ch in ("abcdefghijklmnopqrstuvwxyz" + ALLOWED_CHARS):
                 legal_expression += ch
         
         await self.start_game(interaction, legal_expression)
+    
     
     @hangman.subcommand(description="Start a game of hangman.")
     async def start_expression_pack(self, interaction: Interaction, expression_pack: str = SlashOption(choices=PACKS.keys())):

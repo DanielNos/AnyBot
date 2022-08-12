@@ -41,7 +41,7 @@ class Game:
     def __create_game_embed(self) -> Embed:
         embed = Embed(title="Tic-Tac-Toe | " + self.player.name + " vs. " + self.opponent.name, color=0xFBCE9D)
         embed.add_field(name="Round " + str(self.round) + " | Turn: " + ([self.player.name, self.opponent.name][self.turn-1]), value=EMPTY_BOARD)
-        embed.set_thumbnail(url="https://raw.githubusercontent.com/DanielNos/NosBot/main/icons/tictactoe.png")
+        embed.set_thumbnail(url="https://raw.githubusercontent.com/4lt3rnative/nosbot/main/tictactoe.png")
 
         if self.difficulty != None:
             embed.add_field(name="Difficulty:", value=self.difficulty)
@@ -337,7 +337,7 @@ class TicTacToe(commands.Cog):
 
 def create_victory_embed(title: str, winner: User) -> Embed:
     embed = Embed(title=title)
-    embed.set_thumbnail(url="https://raw.githubusercontent.com/DanielNos/NosBot/main/icons/tictactoe.png")
+    embed.set_thumbnail(url="https://raw.githubusercontent.com/4lt3rnative/nosbot/main/tictactoe.png")
     if winner == None:
         embed.add_field(name="Result: DRAW!", value="The game has ended with a draw.", inline=False)
     else:

@@ -118,7 +118,7 @@ def create_help_embeds(commands, actions):
 
 def create_commands_embed(commands) -> Embed:
     embed: Embed = Embed(title="NosBot Commands List", color=0xFBCE9D)
-    embed.set_thumbnail(url="https://raw.githubusercontent.com/DanielNos/NosBot/main/icons/nosbot.png")
+    embed.set_thumbnail(url="https://raw.githubusercontent.com/4lt3rnative/nosbot/main/nosbot.png")
 
     for key in commands.keys():
         values = ""
@@ -133,7 +133,7 @@ def create_commands_embed(commands) -> Embed:
 
 def create_embed_template() -> Embed:
     embed = Embed(title="NosBot Commands",  color=0xFBCE9D)
-    embed.set_thumbnail(url="https://raw.githubusercontent.com/DanielNos/NosBot/main/icons/nosbot.png")
+    embed.set_thumbnail(url="https://raw.githubusercontent.com/4lt3rnative/nosbot/main/nosbot.png")
     return embed
 
 

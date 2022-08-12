@@ -192,7 +192,7 @@ def create_embed(permissions, page=0) -> Embed:
         embed.add_field(name=key, value=roles, inline=False)
 
     embed.add_field(name="Use /permission edit [setting name] [add/remove] [role]", value="Page: " + str(page+1) + "/" + str(len(permissions)), inline=False)
-    embed.set_thumbnail(url="https://raw.githubusercontent.com/DanielNos/NosBot/main/icons/nosbot.png")
+    embed.set_thumbnail(url="https://raw.githubusercontent.com/4lt3rnative/nosbot/main/nosbot.png")
 
     return embed
 
