@@ -33,7 +33,7 @@ class Game:
         self.expression: str = expression.upper()
 
         self.players = []
-        self.letters = [False]*len(LETTERS)
+        self.letters = [False] * len(LETTERS)
         self.wrong_guesses = 0
     
 
