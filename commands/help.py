@@ -11,8 +11,6 @@ TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
 HELP = None
 COMMANDS = None
-logger = None
-
 
 class HelpControls(ui.View):
     def __init__(self):
@@ -51,8 +49,7 @@ class HelpControls(ui.View):
 class Help(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
-        global logger
-        logger = log.Logger("./logs/log.txt")
+        self.logger = log.Logger("./logs/log.txt")
 
 
     @commands.Cog.listener()
@@ -65,11 +62,11 @@ class Help(commands.Cog):
 
     @slash_command(guild_ids=TEST_GUILDS, description="Show all commands and their actions. Use /help [command name] for detailed info about command.", force_global=PRODUCTION)
     async def help(self, interaction: Interaction, command: str = None):
-        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: help.")
+        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: help.")
 
         # Return if help wasn't initialized
         if HELP == None:
-            logger.log_error("Help command was called before it was initialized.")
+            self.logger.log_error("Help command was called before it was initialized.")
             return
         
         # Return help
@@ -82,11 +79,11 @@ class Help(commands.Cog):
 
     @slash_command(guild_ids=TEST_GUILDS, description="List all commands.", force_global=PRODUCTION)
     async def commands(self, interaction: Interaction):
-        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: commands.")
+        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: commands.")
 
         # Return if commands weren't initialized
         if COMMANDS == None: 
-            logger.log_error("Commands command was called before it was initialized.")
+            self.logger.log_error("Commands command was called before it was initialized.")
             return
         
         await interaction.response.send_message(embed=COMMANDS)

@@ -1,0 +1,15 @@
+{
+    "experience": 0,
+    "required experience": 100,
+    "level": 0,
+    "games": {
+        "hangman": {
+            "played": 0,
+            "won": 0
+        },
+        "tictactoe": {
+            "played": 0,
+            "won": 0
+        }
+    }
+}

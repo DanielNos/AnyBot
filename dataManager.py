@@ -159,6 +159,10 @@ def load_polls():
 
 
 def load_permissions(guild_id: int, paged=True):
+    # Check if directory exists
+    if not exists("./data/permissions/"):
+        mkdir("./data/permissions/")
+
     # Check if file exists
     if guild_id != None and not exists("./data/permissions/" + str(guild_id) + ".json"):
         logger.log_info("Guild " + str(guild_id) + " command permissions couldn't be found. Creating default configuration.")
@@ -273,3 +277,19 @@ def load_hangman_packs():
     logger.log_info("Hangman data loaded.")
 
     return packs
+
+
+def load_profile(user_id: int):
+    user_id = str(user_id)
+
+    # Check if directory exists
+    if not exists("./data/user_profiles/"):
+        mkdir("./data/user_profiles/")
+    
+    # Check if user has profile
+    if not exists("./data/user_profiles/" + user_id + ".json"):
+        copyfile("./default/user_profile.json", "./data/user_profiles/" + user_id + ".json")
+    
+    # Load profile
+    profile = json.load(open("./data/user_profiles/" + str(user_id) + ".json", encoding="utf-8"))
+    return profile
