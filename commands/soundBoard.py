@@ -36,13 +36,17 @@ class SoundBoard(commands.Cog):
             player: VoiceClient = await voice_channel.connect()
 
             # Play
-            source = nextcord.FFmpegPCMAudio(source="./command_data/sound_board/hey_wake_up.mp3", executable="./command_data/sound_board/ffmpeg/bin/ffmpeg.exe")
+            exe = "./command_data/sound_board/ffmpeg/bin/ffmpeg.exe"
+            if PRODUCTION:
+                exe = "ffmpeg"
+                
+            source = nextcord.FFmpegPCMAudio(source="./command_data/sound_board/hey_wake_up.mp3", executable=exe)
             player.play(source)
 
             # Disconnect
             await asyncio.sleep(2)
             await player.disconnect()
-            
+
             self.playing = False
         else:
             await interaction.response.send_message("🚫 FAILED. You are not in a voice channel.", ephemeral=True)

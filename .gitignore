@@ -158,3 +158,4 @@ config*
 .vscode
 data/role_givers.json
 logs/
+command_data/sound_board/ffmpeg/
