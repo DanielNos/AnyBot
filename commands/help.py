@@ -18,32 +18,26 @@ class HelpControls(ui.View):
         self.page = 0
     
 
-    @ui.button(label="Previous", style=ButtonStyle.gray)
+    @ui.button(label="Previous", style=ButtonStyle.gray, disabled=True)
     async def previous(self, button: ui.Button, interaction: Interaction):
-        # Change page
-        if self.page > 0:
-            self.page -= 1
-        else:
-            await interaction.response.defer()
-            return
-
-        # Update embed
-        await interaction.message.edit(embed=HELP[self.page])
-        await interaction.response.defer()
+        await self.change_page(interaction, -1)
 
 
     @ui.button(label="Next", style=ButtonStyle.gray)
     async def next(self, button: ui.Button, interaction: Interaction):
-        # Change page
-        if self.page < len(HELP)-1:
-            self.page += 1
-        else:
-            await interaction.response.defer()
-            return
+        await self.change_page(interaction, 1)
+    
 
-        # Update embed
-        await interaction.message.edit(embed=HELP[self.page])
-        await interaction.response.defer()
+    async def change_page(self, interaction: Interaction, move: int):
+        next_page = self.page + move
+
+        if next_page >= 0 and next_page <= len(HELP)-1:
+            self.page += move
+        
+        self.children[0].disabled = (self.page == 0)
+        self.children[1].disabled = (self.page == len(HELP)-1)
+
+        await interaction.response.edit_message(view=self, embed=HELP[self.page])
 
 
 class Help(commands.Cog):
@@ -71,7 +65,7 @@ class Help(commands.Cog):
         
         # Return help
         if command == None:
-            await interaction.response.send_message(embed=HELP[0], view=HelpControls())
+            await interaction.response.send_message(embed=HELP[0], view=HelpControls(), ephemeral=True)
             return
         
         # Return command info
