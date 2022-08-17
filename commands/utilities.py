@@ -66,6 +66,16 @@ VOLUME_UNITS = {
     "mm3": -9, "mm³": -9
 }
 
+TIME_UNITS = {
+    "y": 1,
+    "d": 365.242,
+    "h": 24,
+    "m": 60,
+    "s": 60,
+    "ms": 1000,
+    "ns": 1000
+}
+
 TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
 logger = None
@@ -109,14 +119,23 @@ class Utilities(commands.Cog):
                 return
         
         # TEMPERATURE CONVERSION
+        unit = unit.lower()
+        new_unit = new_unit.lower()
         value = float(value)
-        if unit.lower() == "°k":
+        
+        if unit == "°k":
             unit = "K"
-        if new_unit.lower() == "°k":
+        if new_unit == "°k":
             new_unit = "K"
 
-        result = convert_temperature(value, unit.lower(), new_unit.lower())
+        result = convert_temperature(value, unit, new_unit)
         if result != None:
+            await interaction.response.send_message(str(value) + " " + unit + " = " + result + " " + new_unit)
+            return
+        
+        # TIME CONVERSION
+        if unit in TIME_UNITS and new_unit in TIME_UNITS:
+            result = convert_time(value, unit, new_unit)
             await interaction.response.send_message(str(value) + " " + unit + " = " + result + " " + new_unit)
             return
 
@@ -130,6 +149,25 @@ def calculate_metric(value: str, original_exponent: int, new_exponent: int) -> f
 
     result = number * 10.0 ** difference
     return format_exponent(result)
+
+
+def convert_time(value: float, original_unit: str, new_unit: str) -> str:
+    original_index = list(TIME_UNITS.keys()).index(original_unit)
+    new_index = list(TIME_UNITS.keys()).index(new_unit)
+
+    if original_index < new_index:
+        original_index += 1
+        while original_index != new_index + 1:
+            value *= list(TIME_UNITS.values())[original_index]
+            print(list(TIME_UNITS.keys())[original_index])
+            original_index += 1
+    else:
+        while original_index != new_index:
+            value /= list(TIME_UNITS.values())[original_index]
+            print(list(TIME_UNITS.keys())[original_index])
+            original_index -= 1
+
+    return str(value)
 
 
 def convert_temperature(value: float, original_unit: str, new_unit: str) -> str:

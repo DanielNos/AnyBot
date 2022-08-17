@@ -9,7 +9,7 @@ import dataManager, emojiDict, access
 import logger as log
 
 LETTERS = list("abcdefghijklmnopqrstuvwxyz")
-ALLOWED_CHARS = ":-' "
+ALLOWED_CHARS = "&:-' "
 PLAYER_ADD_IDT = 5
 GUESS_IDT = 5
 PLAYER_LEAVE_IDT = 10

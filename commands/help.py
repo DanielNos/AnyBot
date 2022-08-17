@@ -12,6 +12,7 @@ PRODUCTION = dataManager.is_production()
 HELP = None
 COMMANDS = None
 
+
 class HelpControls(ui.View):
     def __init__(self):
         super().__init__()
@@ -55,7 +56,7 @@ class Help(commands.Cog):
     
 
     @slash_command(guild_ids=TEST_GUILDS, description="Show all commands and their actions. Use /help [command name] for detailed info about command.", force_global=PRODUCTION)
-    async def help(self, interaction: Interaction, command: str = None):
+    async def help(self, interaction: Interaction):
         self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: help.")
 
         # Return if help wasn't initialized
@@ -63,12 +64,7 @@ class Help(commands.Cog):
             self.logger.log_error("Help command was called before it was initialized.")
             return
         
-        # Return help
-        if command == None:
-            await interaction.response.send_message(embed=HELP[0], view=HelpControls(), ephemeral=True)
-            return
-        
-        # Return command info
+        await interaction.response.send_message(embed=HELP[0], view=HelpControls(), ephemeral=True)
     
 
     @slash_command(guild_ids=TEST_GUILDS, description="List all commands.", force_global=PRODUCTION)
