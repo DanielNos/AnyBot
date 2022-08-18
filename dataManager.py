@@ -293,3 +293,34 @@ def load_profile(user_id: int):
     # Load profile
     profile = json.load(open("./data/user_profiles/" + str(user_id) + ".json", encoding="utf-8"))
     return profile
+
+
+def load_sounds():
+    info = {}
+
+    # Check if file exists
+    if not exists("./command_data/sound_board/sounds.json"):
+        logger.log_error("Couldn't find sound board metadata.")
+    else:
+        info = json.load(open("./command_data/sound_board/sounds.json", encoding="utf-8"))
+        if len(info.keys()) == 0:
+            logger.log_warning("Sound board didn't find any sounds. Check if they are registered properly.")   
+
+    # Format data
+    sounds = []
+    page = {}
+    count = 0
+    for key in info.keys():
+        if count == 15:
+            count = 0
+            sounds.append(page)
+            page = {}
+
+        page[key] = "./command_data/sound_board/" + info[key]
+
+        count += 1
+    
+    if len(page.keys()) != 0:
+        sounds.append(page)
+    
+    return sounds
