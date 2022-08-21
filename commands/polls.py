@@ -247,14 +247,9 @@ def progress_bar(value: float = 0, max: float = 0) -> str:
 
     percentage = round((value / max) * 30)
 
-    bar = "`"
-    for i in range(percentage):
-        bar += "█"
-        
-    for i in range(30 - percentage):
-        bar += " "
+    bar = "`" + ("█" * percentage) + (" " * (30 - percentage)) + "`"
 
-    bar += "` | " + str(round((value / max) * 1000) / 10) + "% (" + str(value) + ")"
+    bar += " | " + str(round((value / max) * 1000) / 10) + "% (" + str(value) + ")"
 
     return bar
 

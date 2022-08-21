@@ -230,12 +230,22 @@ class Hangman(commands.Cog):
 
             await game.message.edit(embed=embed)
 
+            # Add experience
+            for player in game.players:
+                dataManager.add_game_record(player.id, "hangman", False)
+
             # Delete game
             game.delete()
             return
         
         # Check for victory
         if game.check_for_victory():
+            # Add experience
+            for player in game.players:
+                if player.id != interaction.user.id:
+                    dataManager.add_game_record(player.id, "hangman", False)
+            dataManager.add_game_record(interaction.user.id, "hangman", True)
+
             # Update game message
             embed = normal_embed
             embed.add_field(name=interaction.user.name + "#" + interaction.user.discriminator + " has won!", value="Congratulations!", inline=False)
@@ -304,14 +314,20 @@ class Hangman(commands.Cog):
         
         game: Game = users_in_games[interaction.user.id]
 
-        # Incorrect guess
+        # INCORRECT GUESS
         if game.expression.lower() != legal_expression:
             game.wrong_guesses += 1
             await game.message.edit(embed=game.create_embed())
             await interaction.response.send_message("ℹ️ " + interaction.user.name + " has incorrectly guessed the expression \"" + legal_expression.upper() + "\".", delete_after=INCORRECT_GUESS_IDT)
             return
-        
-        # Correct guess
+            
+        # CORRECT GUESS
+        # Add experience
+        for player in game.players:
+            if player.id != interaction.user.id:
+                dataManager.add_game_record(player.id, "hangman", False)
+        dataManager.add_game_record(interaction.user.id, "hangman", True)
+
         # Edit embed
         embed: Embed = game.message.embeds[0]
         embed.add_field(name=interaction.user.name + "#" + interaction.user.discriminator + " has won!", value="Congratulations!", inline=False)

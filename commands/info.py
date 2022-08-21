@@ -67,6 +67,5 @@ class Info(commands.Cog):
         await interaction.response.send_message(user.name + " joined in " + user.joined_at.strftime("%d-%m-%Y %H:%M:%S") + ".")
     
 
-
 def load(client: commands.Bot):
     client.add_cog(Info(client))

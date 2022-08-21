@@ -1,0 +1,11 @@
+{
+    "hangman": {
+        "win": 10,
+        "defeat": 5
+    },
+    "tictactoe": {
+        "win": 5,
+        "defeat": 3
+    },
+    "sound board": 1
+}

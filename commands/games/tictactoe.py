@@ -350,26 +350,37 @@ def check_for_winner(game: Game):
     global games
     winner = game.get_winner()
 
-    # Draw
+    # DRAW
     if game.round >= 10 and winner == None:
         # Update embed
         game.board_render.add_field(name="DRAW!", value="Game has ended with a draw.", inline=False)
         game.board_render.remove_footer()
 
+        # Add experience
+        dataManager.add_game_record(game.player.id, "tictactoe", False)
+        dataManager.add_game_record(game.opponent.id, "tictactoe", False)
+
         game.delete()
         return "DRAW"
 
-    # No winner
+    # NO WINNER
     if winner == None:
+        # Add experience
+        dataManager.add_game_record(game.player.id, "tictactoe", False)
+        dataManager.add_game_record(game.opponent.id, "tictactoe", False)
         return None
 
-    # One winner
+    # ONE WINNER
     # Update embed
     game.board_render.add_field(name="WINNER:", value=winner.mention, inline=False)
     game.board_render.remove_footer()
+
+    # Add experience
+    dataManager.add_game_record(game.player.id, "tictactoe", winner.id == game.player.id)
+    dataManager.add_game_record(game.opponent.id, "tictactoe", winner.id == game.opponent.id)
     
     # Delete game
-    game.delete()
+    game.delete()    
 
     return winner
 

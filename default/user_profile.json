@@ -1,7 +1,7 @@
 {
     "experience": 0,
     "required experience": 100,
-    "level": 0,
+    "level": 1,
     "games": {
         "hangman": {
             "played": 0,

@@ -144,6 +144,9 @@ class SoundBoardControls(View):
             await interaction.response.defer()
             return
 
+        # Add experience
+        dataManager.add_experience(interaction.user.id, "sound board")
+
         ACTIVE_USERS.append(interaction.user.id)
 
         # Connect to voice channel

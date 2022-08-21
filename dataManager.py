@@ -9,6 +9,12 @@ from dataClasses import Poll, RoleGiver
 logger = log.Logger("./logs/log.txt")
 
 
+def save_json(path: str, json):
+    with open(path, mode="w", encoding="utf-8") as file:
+        file.write(json.dumps(json, indent=4))
+        file.close()
+
+
 def load_config():
     if not exists("./config.json"):
         logger.log_error("Config couldn't be found.")
@@ -48,9 +54,7 @@ def save_role_givers(roleGivers: dict):
         new_dict[rg] = roleGivers[rg].to_json()
 
     # Save
-    with open("./data/role_givers.json", mode="w") as file:
-        file.write(json.dumps(new_dict))
-        file.close()
+    save_json("./data/role_givers.json", new_dict)
 
 
 def load_role_givers():
@@ -106,13 +110,8 @@ def save_polls(polls: dict, poll_ids: dict):
         polls_dict[key] = polls[key].to_json()
 
     # Save
-    with open("./data/polls.json", mode="w", encoding="utf-8") as file:
-        file.write(json.dumps(polls_dict))
-        file.close()
-    
-    with open("./data/poll_ids.json", mode="w", encoding="utf-8") as file:
-        file.write(json.dumps(poll_ids))
-        file.close()
+    save_json("./data/polls.json", polls_dict)
+    save_json("./data/poll_ids.json", poll_ids)
 
 
 def load_polls():
@@ -198,9 +197,7 @@ def load_permissions(guild_id: int, paged=True):
 
 
 def save_permissions(guild_id: int, permissions: dict):
-    with open("./data/permissions/" + str(guild_id) + ".json", mode="w", encoding="utf-8") as file:
-        file.write(json.dumps(permissions, indent=4))
-        file.close()
+    save_json("./data/permissions/" + str(guild_id) + ".json", permissions)
 
 
 def reset_permissions(guild_id: int):
@@ -248,9 +245,7 @@ def save_welcome_message(guild_id: int, message: str):
     message_dict["message"] = message
 
     # Save data
-    with open("./data/welcome_messages/" + str(guild_id) + ".json", mode="w", encoding="utf-8") as file:
-        file.write(json.dumps(message_dict, indent=4))
-        file.close()
+    save_json("./data/welcome_messages/" + str(guild_id) + ".json", message_dict)
 
 
 def remove_welcome_message(guild_id: int):
@@ -291,7 +286,7 @@ def load_profile(user_id: int):
         copyfile("./default/user_profile.json", "./data/user_profiles/" + user_id + ".json")
     
     # Load profile
-    profile = json.load(open("./data/user_profiles/" + str(user_id) + ".json", encoding="utf-8"))
+    profile = json.load(open("./data/user_profiles/" + user_id + ".json", encoding="utf-8"))
     return profile
 
 
@@ -324,3 +319,45 @@ def load_sounds():
         sounds.append(page)
     
     return sounds
+
+
+def __add_experience(user_id: int, experience: int):
+    # Load profile
+    profile = load_profile(user_id)
+    
+    # Add experience
+    profile["experience"] += experience
+
+    # Level up
+    if profile["experience"] >= profile["required experience"]:
+        profile["level"] += 1
+
+        profile["experience"] -= profile["required experience"]
+        profile["required experience"] = round(profile["required experience"] * 1.1)
+    
+    # Save profile
+    save_json("./data/user_profiles/" + str(user_id) + ".json", profile)
+
+
+def add_experience(user_id: int, source: str):
+    # Load profile
+    profile = load_profile(user_id)
+    
+    # Add experience
+    experience = json.load(open("./command_data/user_profiles/experience.json", encoding="utf-8"))
+    __add_experience(user_id, experience[source])
+    
+    # Save profile
+    save_json("./data/user_profiles/" + str(user_id) + ".json", profile)
+
+
+def add_game_record(user_id: int, game: str, won: bool):
+    # Load profile
+    profile = load_profile(user_id)
+
+    # Update record
+    profile["games"][game]["played"] += 1
+    profile["games"][game]["won"] = int(won)
+
+    # Save profile
+    save_json("./data/user_profiles/" + str(user_id) + ".json", profile)
