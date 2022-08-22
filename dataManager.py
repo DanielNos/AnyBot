@@ -9,9 +9,9 @@ from dataClasses import Poll, RoleGiver
 logger = log.Logger("./logs/log.txt")
 
 
-def save_json(path: str, json):
+def save_json(path: str, object: dict):
     with open(path, mode="w", encoding="utf-8") as file:
-        file.write(json.dumps(json, indent=4))
+        file.write(json.dumps(object, indent=4))
         file.close()
 
 
@@ -323,13 +323,13 @@ def load_sounds():
 
 def __add_experience(user_id: int, experience: int):
     # Load profile
-    profile = load_profile(user_id)
+    profile: dict = load_profile(user_id)
     
     # Add experience
     profile["experience"] += experience
 
     # Level up
-    if profile["experience"] >= profile["required experience"]:
+    if int(profile["experience"]) >= int(profile["required experience"]):
         profile["level"] += 1
 
         profile["experience"] -= profile["required experience"]
@@ -341,7 +341,7 @@ def __add_experience(user_id: int, experience: int):
 
 def add_experience(user_id: int, source: str):
     # Load profile
-    profile = load_profile(user_id)
+    profile: dict = load_profile(user_id)
     
     # Add experience
     experience = json.load(open("./command_data/user_profiles/experience.json", encoding="utf-8"))
@@ -361,3 +361,7 @@ def add_game_record(user_id: int, game: str, won: bool):
 
     # Save profile
     save_json("./data/user_profiles/" + str(user_id) + ".json", profile)
+
+    # Add experience
+    experience = json.load(open("./command_data/user_profiles/experience.json", encoding="utf-8"))
+    __add_experience(user_id, experience[game][("win" * won) + ((not won) * "defeat")])
