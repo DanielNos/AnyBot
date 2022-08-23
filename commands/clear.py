@@ -8,19 +8,17 @@ import logger as log
 
 TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
-logger = None
 
 
 class Clear(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
-        global logger
-        logger = log.Logger("./logs/log.txt")
+        self.logger = log.Logger("./logs/log.txt")
     
 
     @slash_command(guild_ids=TEST_GUILDS, description="Deletes up to 100 messages from current channel.", force_global=PRODUCTION)
     async def clear(self, interaction: Interaction, amount: int = SlashOption(min_value=1, max_value=100)):
-        logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: clear " + str(amount) +".")
+        self.logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: clear " + str(amount) +".")
         
         # Return if user doesn't have permission to run command
         if not access.has_access(interaction.user, interaction.guild, "Use Clear"):

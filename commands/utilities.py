@@ -78,19 +78,17 @@ TIME_UNITS = {
 
 TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
-logger = None
 
 
 class Utilities(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
-        global logger
-        logger = log.Logger("./logs/log.txt")
+        self.logger = log.Logger("./logs/log.txt")
 
 
     @slash_command(guild_ids=TEST_GUILDS, description="Chooses between multiple choices.", force_global=PRODUCTION)
     async def choose(self, interaction: Interaction, choices: str):
-        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: choose " + choices + ".")
+        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: choose " + choices + ".")
 
         embed: Embed = Embed(title="Picked: __" + random.choice(choices.split(" ")) + "__", color=0xFBCE9D)
         embed.add_field(name="Choices:", value=choices, inline=True)
@@ -100,7 +98,7 @@ class Utilities(commands.Cog):
 
     @slash_command(guild_ids=TEST_GUILDS, description="Convert a value to a different unit.", force_global=PRODUCTION)
     async def convert(self, interaction: Interaction, value: str, unit: str, new_unit: str = SlashOption(description="The new unit to convert your value to.")):
-        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: convert " + value + " " + unit + " " + new_unit + ".")
+        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: convert " + value + " " + unit + " " + new_unit + ".")
         
         # Return if value isn't float
         value = value.replace(",", ".")

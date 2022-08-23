@@ -8,7 +8,6 @@ import dataManager, access
 
 TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
-logger = None
 PERMISSIONS_PER_PAGE = 0
 
 def create_choices(choices) -> dict:
@@ -64,9 +63,7 @@ class PermissionsControls(ui.View):
 class Permissions(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
-
-        global logger, CHOICES
-        logger = log.Logger("./logs/log.txt")
+        self.logger = log.Logger("./logs/log.txt")
     
 
     @commands.Cog.listener()
@@ -82,7 +79,7 @@ class Permissions(commands.Cog):
 
     @permissions.subcommand(description="Show command permissions.")
     async def view(self, interaction: Interaction, show_only_me: bool = False):
-        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: permissions.")
+        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: permissions.")
         
         # Return if user doesn't have permission to run command
         if not access.has_access(interaction.user, interaction.guild, "View Permissions"):
@@ -120,7 +117,7 @@ class Permissions(commands.Cog):
         role: Role = SlashOption()
         ):
         # Log
-        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: permission edit " + list(CHOICES.keys())[setting] + " " + operation + " @" + role.name + ".")
+        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: permission edit " + list(CHOICES.keys())[setting] + " " + operation + " @" + role.name + ".")
         
         # Return if role is bot managed
         if role.is_bot_managed():
@@ -164,7 +161,7 @@ class Permissions(commands.Cog):
     
     @permissions.subcommand(description="Reset all command permissions to default.")
     async def reset(self, interaction: Interaction):
-        logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: permissions reset.")
+        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: permissions reset.")
 
         # Return if user doesn't have permission to edit permissions
         if not access.has_access(interaction.user, interaction.guild, "Edit Permissions"):

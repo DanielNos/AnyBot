@@ -1,8 +1,8 @@
 import sys
 from unidecode import unidecode
 from nextcord.ext import commands
-from nextcord.ui import View, Button, Modal, TextInput, Select
-from nextcord import slash_command, SelectOption, ButtonStyle, SlashOption, PartialInteractionMessage, Interaction, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
+from nextcord.ui import View, Button, Modal, TextInput
+from nextcord import slash_command, ButtonStyle, SlashOption, PartialInteractionMessage, Interaction, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
 from random import choice
 
 sys.path.append("../../NosBot")
@@ -33,19 +33,19 @@ class Controls(View):
         self.logger = logger
     
         # Create buttons
-        button: Button = Button(style=ButtonStyle.blurple, row=4, label="Guess Letter")
+        button: Button = Button(style=ButtonStyle.blurple, label="Guess Letter")
         button.callback = self.guess_letter
         self.add_item(button)
 
-        button: Button = Button(style=ButtonStyle.blurple, row=4, label="Guess Expression")
+        button: Button = Button(style=ButtonStyle.blurple, label="Guess Expression")
         button.callback = self.guess_expression
         self.add_item(button)
 
-        button: Button = Button(style=ButtonStyle.gray, row=4, label="Add Player")
+        button: Button = Button(style=ButtonStyle.gray, label="Add Player")
         button.callback = self.add_player
         self.add_item(button)
 
-        button: Button = Button(style=ButtonStyle.red, row=4, label="Leave")
+        button: Button = Button(style=ButtonStyle.red, label="Leave")
         button.callback = self.leave
         self.add_item(button)
 
@@ -91,7 +91,6 @@ class HangmanAddPlayer(Modal):
         self.logger = logger
 
         self.user = TextInput(label="User Name:", min_length=1, max_length=50)
-
         self.add_item(self.user)
     
 
@@ -409,7 +408,11 @@ class Hangman(commands.Cog):
             if ch in ("abcdefghijklmnopqrstuvwxyz" + ALLOWED_CHARS):
                 legal_expression += ch
         
-        await self.start_game(interaction, legal_expression)
+        # Create game if expression is long enough
+        if len(legal_expression) > 0:
+            await self.start_game(interaction, legal_expression)
+        else:
+            await interaction.response.send_message("🚫 Failed. Expression was too short or contained illegal characters.",ephemeral=True)
     
     
     @hangman.subcommand(description="Start a game of hangman.")
