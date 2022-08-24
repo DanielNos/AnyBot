@@ -1,5 +1,5 @@
 class Poll():
-    def __init__(self, emojis, can_change_votes: bool, voted = []):
+    def __init__(self, emojis=[], can_change_votes=True, voted=[]):
         self.emojis = emojis
         self.can_change_votes = can_change_votes
         self.voted = voted

@@ -5,5 +5,6 @@
     "Use Clear": [],
     "Manage Polls": ["@everyone"],
     "Start Games": ["@everyone"],
-    "Manage Welcome Message": []
+    "Manage Welcome Message": [],
+    "Use Soundboard": ["@everyone"]
 }

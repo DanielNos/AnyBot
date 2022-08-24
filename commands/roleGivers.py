@@ -29,9 +29,9 @@ class AddRole(Modal):
     
 
     async def callback(self, interaction: Interaction):
-        for r in interaction.guild.roles:
-            if r.name.lower() == self.role_input.value.lower():
-                await self.add_rg_role(interaction, r)
+        for role in interaction.guild.roles:
+            if role.name.lower() == self.role_input.value.lower():
+                await self.add_rg_role(interaction, role)
                 return
         await interaction.response.defer()
     
@@ -53,11 +53,6 @@ class AddRole(Modal):
         # Cancel if no role giver exists
         if not interaction.user.id in blueprints.keys() or message == None:
             await interaction.response.send_message("🚫 FAILED. You don't have an unfinished role giver! You can create one by using /new_rg.", ephemeral=True)
-            return
-        
-        # Cancel if role doesn't exist or is invalid
-        if interaction.guild.get_role(role.id) == None or role.name == "@everyone":
-            await interaction.response.send_message("🚫 FAILED. Provided role isn't valid.", ephemeral=True)
             return
 
         rg: RoleGiver = blueprints[interaction.user.id]
@@ -175,7 +170,7 @@ class RoleGivers(commands.Cog):
 
     @role_giver.subcommand(description="Create a new role giver.")
     async def create(self, interaction: Interaction):
-        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: new_rg.")
+        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: role_giver create.")
 
         # Return if user doesn't have permission to run command
         if not access.has_access(interaction.user, interaction.guild, "Manage Role Givers"):
@@ -187,12 +182,12 @@ class RoleGivers(commands.Cog):
         
         # Create a new role giver if one doesn't already exist
         if not interaction.user.id in (blueprints.keys()):
-            response: PartialInteractionMessage = await interaction.response.send_message(content="Use /add_role [role name] [*description] to add roles.", view=RoleGiverDesigner(self.logger), ephemeral=True)
+            response: PartialInteractionMessage = await interaction.response.send_message(content="Add roles to this role giver and then complete it using the buttons below.", view=RoleGiverDesigner(self.logger), ephemeral=True)
             
             message: Message = await response.fetch()
             blueprints[interaction.user.id] = RoleGiver(message.id)
         else:
-            await interaction.response.send_message("🚫 FAILED. You already have an unfinished role giver! Complete it or delete it using /del_rg.", ephemeral=True)
+            await interaction.response.send_message("🚫 FAILED. You already have an unfinished role giver! Complete it or delete it using the controls under it.", ephemeral=True)
 
 
     @commands.Cog.listener()

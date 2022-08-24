@@ -1,16 +1,101 @@
-import sys, nextcord, emoji
+import sys, nextcord, discord_emoji
 from random import randint
+from nextcord.ui import View, Modal, Button, TextInput, Select
 from nextcord.ext import commands
-from nextcord import slash_command, SlashOption, Message, PartialInteractionMessage, User, Embed, Interaction, Reaction, RawMessageDeleteEvent
+from nextcord import slash_command, SelectOption, ButtonStyle, Message, User, Embed, Interaction, Reaction, RawMessageDeleteEvent
 
 sys.path.append("../NosBot")
 import logger as log
 import dataManager, emojiDict, access
 from dataClasses import Poll
 
-
 TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
+
+
+class AddOption(Modal):
+    def __init__(self, logger: log.Logger, view: View):
+        super().__init__(title="Add Option")
+        self.logger = logger
+        self.view = view
+
+        # Add inputs
+        self.option = TextInput(label="Option Text:", min_length=1, max_length=50, required=True)
+        self.add_item(self.option)
+
+        self.emoji = TextInput(label="Reaction Emoji:", min_length=1, max_length=50, required=False, placeholder="Optional. Use ':emoji:' format.")
+        self.add_item(self.emoji)
+
+
+    async def callback(self, interaction: Interaction):
+        emoji = self.emoji.value.lower()
+
+        # Try to extract emoji from option
+        uni_emoji = discord_emoji.to_uni(emoji)
+        # Use letter if emoji couldn't be found
+        if not uni_emoji:
+            uni_emoji = emojiDict.LETTERS[len(self.view.poll.emojis)]
+        
+        self.view.poll.emojis.append(uni_emoji)
+
+        # Add option to message
+        embed: Embed = interaction.message.embeds[0]
+        embed.add_field(name=uni_emoji + " " + self.option.value, value=progress_bar(), inline=False)
+
+        await interaction.response.edit_message(embed=embed, view=self.view)
+
+
+class PollDesigner(View):
+    def __init__(self, logger: log.Logger, poll_id: int, enable_complete=False):
+        super().__init__()
+        self.logger = logger
+        self.poll_id = poll_id
+        self.poll = Poll()
+
+        # Create buttons
+        button: Button = Button(style=ButtonStyle.blurple, label="Add Option")
+        button.callback = self.add_option
+        self.add_item(button)
+
+        button: Button = Button(style=ButtonStyle.gray, label="Changing Votes: Enabled")
+        button.callback = self.change_voting
+        self.add_item(button)
+
+        button: Button = Button(style=ButtonStyle.red, label="Delete")
+        button.callback = self.delete
+        self.add_item(button)
+
+        button: Button = Button(style=ButtonStyle.green, label="Complete", disabled=(not enable_complete))
+        button.callback = self.complete
+        self.add_item(button)
+    
+
+    async def add_option(self, interaction: Interaction):
+        await interaction.response.send_modal(AddOption(self.logger, self))
+    
+
+    async def change_voting(self, interaction: Interaction):
+        self.poll.can_change_votes = not self.poll.can_change_votes
+        self.children[1].label = "Changing Votes: " + (self.poll.can_change_votes * "Enabled") + ("Disabled" * (not self.poll.can_change_votes))
+        
+        await interaction.response.edit_message(view=self)
+
+
+    async def delete(self, interaction: Interaction):
+        await interaction.message.delete()
+    
+
+    async def complete(self, interaction: Interaction):
+        self.polls[interaction.message.id] = self.poll
+        self.poll_ids[self.poll_id] = interaction.message.id
+
+        # Remove controls and add reactions
+        message: Message = await interaction.response.edit_message(view=None)
+        for emoji in self.poll.emojis:
+            await message.add_reaction(emoji)
+
+        # Save polls to file
+        dataManager.save_polls(self.polls, self.poll_ids)
 
 
 class Polls(commands.Cog):
@@ -27,17 +112,14 @@ class Polls(commands.Cog):
 
 
     @slash_command(guild_ids=TEST_GUILDS, description="Create a poll.", force_global=PRODUCTION)
-    async def new_poll(self, interaction: Interaction, question: str, allow_changing_votes: str = SlashOption(choices=["Yes", "No"]),
-    option1: str = SlashOption(), option2: str = SlashOption(), option3: str = None, option4: str = None, option5: str = None, option6: str = None, 
-    option7: str = None, option8: str = None, option9: str = None):
+    async def poll(self, interaction: Interaction):
+        return
+    
 
-        # Remove not used options
-        options = [option1, option2, option3, option4, option5, option6, option7, option8, option9]
-        while None in options:
-            options.remove(None)
-
+    @poll.subcommand(description="Create a poll.")
+    async def create(self, interaction: Interaction, question: str):
         # Log
-        self.logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: new_poll " + question + " options: " + str(options) + ".")
+        self.logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: poll create " + question + ".")
 
         # Return if user doesn't have permission to run command
         if not access.has_access(interaction.user, interaction.guild, "Manage Polls"):
@@ -49,39 +131,12 @@ class Polls(commands.Cog):
         embed: Embed = Embed(title=question, color=nextcord.Color.random())
         embed.set_footer(text="ID: " + poll_id + "\nVote using reactions!")
 
-        # Fill embed with options
-        i = 0
-        emojis = []
-        for option in options:
-            # Try to extract emoji from option
-            if emoji.emoji_count(option[:2]):
-                emojis.append(option[:2])
-            elif emoji.emoji_count(option[:3]):
-                emojis.append(option[:3])
-            # Use letter if it wasn't found
-            else:
-                option = emojiDict.LETTERS[i] + " " + option
-                emojis.append(emojiDict.LETTERS[i])
-     
-            embed.add_field(name=option, value=progress_bar(), inline=False)
-            i += 1
-
-        # Send message and save it
-        response: PartialInteractionMessage = await interaction.response.send_message(embed=embed)
-        message: Message = await response.fetch()
-        self.polls[message.id] = Poll(emojis, allow_changing_votes == "Yes")
-        self.poll_ids[poll_id] = message.id
-
-        # Add reactions
-        for e in emojis:
-            await message.add_reaction(e)
-        
-        # Save polls to file
-        dataManager.save_polls(self.polls, self.poll_ids)
+        # Send message
+        await interaction.response.send_message(embed=embed, view=PollDesigner(self.logger, poll_id))
     
 
-    @slash_command(guild_ids=TEST_GUILDS, description="Locks a poll so users won't be able to vote anymore.", force_global=PRODUCTION)
-    async def lock_poll(self, interaction: Interaction, poll_id: str):
+    @poll.subcommand(description="Locks a poll so users won't be able to vote anymore.")
+    async def lock(self, interaction: Interaction, poll_id: str):
         # Log
         self.logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: lock_poll " + poll_id + ".")
 

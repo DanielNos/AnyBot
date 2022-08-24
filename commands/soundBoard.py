@@ -5,7 +5,7 @@ from nextcord import Interaction, slash_command, VoiceClient, ButtonStyle
 
 sys.path.append("../NosBot")
 import logger as log
-import dataManager
+import dataManager, access
 from formatting import complete_name
 
 TEST_GUILDS = dataManager.load_test_guilds()
@@ -132,6 +132,11 @@ class SoundBoardControls(View):
         # Log
         sound_name = list(SOUNDS[self.page].keys())[index]
         self.logger.log_info(complete_name(interaction.user) + " has triggered sound board: " + sound_name + ".")
+
+        # Return if user doesn't have permission to run command
+        if not access.has_access(interaction.user, interaction.guild, "Use Soundboard"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission to use soundboard.", ephemeral=True)
+            return
         
         voice = interaction.user.voice
 
@@ -211,40 +216,12 @@ class SoundBoard(commands.Cog):
     async def sound_board(self, interaction: Interaction):
         self.logger.log_info(complete_name(interaction.user) + " has called command: sound_board.")
 
+        # Return if user doesn't have permission to run command
+        if not access.has_access(interaction.user, interaction.guild, "Use Soundboard"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission to use soundboard.", ephemeral=True)
+            return
+
         await interaction.response.send_message(view=SoundBoardControls(self.client, self.logger), ephemeral=True)
-
-
-    @slash_command(guild_ids=TEST_GUILDS, description="Play the \"Hey, wake up!\" sound.", force_global=PRODUCTION)
-    async def hey_wake_up(self, interaction: Interaction):
-        self.logger.log_info(complete_name(interaction.user) + " has called command: hey_wake_up.")
-
-        # Try to find users voice channel
-        voice = interaction.user.voice
-
-        # Return if bot is already playing
-        if self.playing:
-            await interaction.response.send_message("🚫 FAILED. NosBot is currently playing in a channel. Try again once it finishes.", ephemeral=True)
-
-        # Play if user is in a voice channel
-        if voice != None:
-            await interaction.response.send_message("✅ Your message is being played.", ephemeral=True)
-            self.playing = True
-
-            # Connect to voice channel
-            player: VoiceClient = await voice.channel.connect()
-
-            # Play
-            exe = "./command_data/sound_board/ffmpeg/bin/ffmpeg.exe" * (not PRODUCTION) or "ffmpeg" * PRODUCTION
-            source = nextcord.FFmpegPCMAudio(source="./command_data/sound_board/hey_wake_up.mp3", executable=exe)
-            player.play(source)
-
-            # Disconnect
-            await asyncio.sleep(2)
-            await player.disconnect()
-
-            self.playing = False
-        else:
-            await interaction.response.send_message("🚫 FAILED. You are not in a voice channel.", ephemeral=True)
 
 
 def load(client: commands.Bot):
