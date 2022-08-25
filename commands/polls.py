@@ -1,8 +1,8 @@
 import sys, nextcord, discord_emoji
 from random import randint
-from nextcord.ui import View, Modal, Button, TextInput, Select
+from nextcord.ui import View, Modal, Button, TextInput
 from nextcord.ext import commands
-from nextcord import slash_command, SelectOption, ButtonStyle, Message, User, Embed, Interaction, Reaction, RawMessageDeleteEvent
+from nextcord import slash_command, ButtonStyle, Message, User, Embed, Interaction, Reaction, RawMessageDeleteEvent
 
 sys.path.append("../NosBot")
 import logger as log
@@ -11,6 +11,9 @@ from dataClasses import Poll
 
 TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
+
+polls = {}
+poll_ids = {}
 
 
 class AddOption(Modal):
@@ -41,6 +44,9 @@ class AddOption(Modal):
         # Add option to message
         embed: Embed = interaction.message.embeds[0]
         embed.add_field(name=uni_emoji + " " + self.option.value, value=progress_bar(), inline=False)
+
+        # Enable completing
+        self.view.children[3].disabled = False
 
         await interaction.response.edit_message(embed=embed, view=self.view)
 
@@ -86,8 +92,9 @@ class PollDesigner(View):
     
 
     async def complete(self, interaction: Interaction):
-        self.polls[interaction.message.id] = self.poll
-        self.poll_ids[self.poll_id] = interaction.message.id
+        global polls, poll_ids
+        polls[interaction.message.id] = self.poll
+        poll_ids[self.poll_id] = interaction.message.id
 
         # Remove controls and add reactions
         message: Message = await interaction.response.edit_message(view=None)
@@ -95,20 +102,19 @@ class PollDesigner(View):
             await message.add_reaction(emoji)
 
         # Save polls to file
-        dataManager.save_polls(self.polls, self.poll_ids)
+        dataManager.save_polls(polls, poll_ids)
 
 
 class Polls(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
-        self.polls = {}
-        self.poll_ids = {}
         self.logger = log.Logger("./logs/log.txt")
 
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.polls, self.poll_ids = dataManager.load_polls()
+        global polls, poll_ids
+        polls, poll_ids = dataManager.load_polls()
 
 
     @slash_command(guild_ids=TEST_GUILDS, description="Create a poll.", force_global=PRODUCTION)
@@ -146,26 +152,26 @@ class Polls(commands.Cog):
             return
             
         # Return if poll doesn't exist
-        if not poll_id in self.poll_ids.keys():
+        if not poll_id in poll_ids.keys():
             await interaction.response.send_message("🚫 FAILED. Poll with ID " + poll_id +" wasn't found.", ephemeral=True)
             return
             
         # Lock it
-        poll = self.poll_ids.pop(poll_id)
-        self.polls.pop(poll)
+        poll = poll_ids.pop(poll_id)
+        polls.pop(poll)
 
-        dataManager.save_polls(self.polls, self.poll_ids)
+        dataManager.save_polls(polls, poll_ids)
         await interaction.response.send_message("✅ Successfully locked poll.", ephemeral=True)
     
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, event: nextcord.RawReactionActionEvent):
         # Cancel if there are no polls
-        if len(self.polls) == 0:
+        if len(polls) == 0:
             return
             
         # Cancel if message isn't a poll
-        if not event.message_id in self.polls.keys():
+        if not event.message_id in polls.keys():
             return
         
         # Cancel if reaction author is bot
@@ -174,7 +180,7 @@ class Polls(commands.Cog):
 
         # Remove reaction if it isn't valid
         message: Message = await self.client.get_channel(event.channel_id).fetch_message(event.message_id)
-        poll: Poll = self.polls[event.message_id]
+        poll: Poll = polls[event.message_id]
 
         if event.user_id != self.client.user.id and not event.emoji.name in poll.emojis:
             for reaction in message.reactions:
@@ -210,18 +216,18 @@ class Polls(commands.Cog):
             return
         
         # Update poll
-        self.polls[event.message_id].voted.append(event.user_id)
+        polls[event.message_id].voted.append(event.user_id)
         await self.update_poll(message)
 
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, event: nextcord.RawReactionActionEvent):
         # Cancel if there are no polls
-        if len(self.polls) == 0:
+        if len(polls) == 0:
             return
         
         # Cancel if message isn't a poll
-        if not event.message_id in self.polls.keys():
+        if not event.message_id in polls.keys():
             return
         
         # Cancel if reaction is removed by bot
@@ -229,7 +235,7 @@ class Polls(commands.Cog):
             return
         
         # Cancel if poll doesn't allow changing votes
-        poll: Poll = self.polls[event.message_id]
+        poll: Poll = polls[event.message_id]
         if not poll.can_change_votes:
             return
 
@@ -240,12 +246,12 @@ class Polls(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, event: RawMessageDeleteEvent):
-        if event.message_id in list(self.polls.keys()):
+        if event.message_id in list(polls.keys()):
             # Log
             self.logger.log_info("Poll " + str(event.message_id) + " message was deleted. Removing poll object.")
 
             # Remove from lists
-            self.polls.pop(event.message_id)
+            polls.pop(event.message_id)
             values = list(self.poll_ids.values())
             for i in range(len(values)):
                 if values[i] == event.message_id:
@@ -253,18 +259,18 @@ class Polls(commands.Cog):
                     break
 
             # Save them
-            dataManager.save_polls(self.polls, self.poll_ids)
+            dataManager.save_polls(polls, self.poll_ids)
 
     
     @commands.Cog.listener()
     async def on_raw_bulk_message_delete(self, event: nextcord.RawBulkMessageDeleteEvent):
         for id in event.message_ids:
-            if id in list(self.polls.keys()):
+            if id in list(polls.keys()):
                 # Log
                 self.logger.log_info("Poll " + str(id) + " message was deleted. Removing poll object.")
                 
                 # Remove from lists
-                self.polls.pop(id)
+                polls.pop(id)
                 values = list(self.poll_ids.values())
                 for i in range(len(values)):
                     if values[i] == id:
@@ -272,7 +278,7 @@ class Polls(commands.Cog):
                         break
                 
                 # Save them
-                dataManager.save_polls(self.polls, self.poll_ids)
+                dataManager.save_polls(polls, self.poll_ids)
 
 
     async def update_poll(self, message: Message):
