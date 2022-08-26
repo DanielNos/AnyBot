@@ -1,12 +1,8 @@
 import logger as log
-import nextcord, dataManager, sys
+import nextcord, dataManager
 from nextcord.ext import commands
+import dataManager
 
-sys.path.append("./commands/")
-import roleGivers, help, clear, info, utilities, polls, permissions, welcome, profiles, soundBoard
-
-sys.path.append("./commands/games/")
-import tictactoe, hangman
 
 # Setup logger
 logger = log.Logger("./logs/log.txt")
@@ -25,23 +21,12 @@ intents.members = True
 client = commands.Bot(command_prefix="?", intents=intents)
 
 # Load commands
-roleGivers.load(client)
-help.load(client)
-clear.load(client)
-info.load(client)
-utilities.load(client)
-polls.load(client)
-permissions.load(client)
-welcome.load(client)
-profiles.load(client)
-soundBoard.load(client)
+logger.log_info("Loading commands...")
 
-# Load Games
-tictactoe.load(client)
-hangman.load(client)
+dataManager.import_commands("./commands/", client)
 
 logger.log_info("Commands loaded.")
-logger.log_info("Loading commands data...")
+
 
 # Run bot
 client.run(CONFIG["token"])

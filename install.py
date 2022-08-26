@@ -1,8 +1,16 @@
 import os, platform
 
 
+# LIBRARIES
+print("Installing libraries...")
+
+for lib in ["python3-pip", "ffmpeg"]:
+    os.system("sudo apt install " + lib)
+
 # MODULES
 print("Installing modules...")
+
+os.system("sudo apt install python3-pip")
 
 python = "py"
 if platform.system() == "Linux":
@@ -10,10 +18,5 @@ if platform.system() == "Linux":
 
 for module in ["nextcord", "colorama", "emoji", "PyNaCl", "discord-emoji"]:
     os.system(python + " -m pip install " + module)
-
-# LIBRARIES
-print("Installing libraries...")
-
-os.system("sudo apt install ffmpeg")
 
 print("Bot is ready. Run main.py to start it.")

@@ -1,12 +1,35 @@
 import json
 import logger as log
-from os.path import exists
+from os.path import exists, isdir
 from os import mkdir, remove, listdir
 from shutil import copyfile
+from importlib import import_module
 from dataClasses import Poll, RoleGiver
 
 
 logger = log.Logger("./logs/log.txt")
+
+
+def import_commands(path: str, client):
+    if not path.endswith("/"):
+        path += "/"
+
+    # Create package path for modules
+    module_path = path.replace("/", ".").strip(".") + "."
+
+    # Go trough all files
+    for file in listdir(path):
+        # Load contents of subdirectories
+        if isdir(file) and not "__" in file and not file[0] == ".":
+            import_commands(path + file)
+        # Ignore everything except modules
+        elif file == "__init__.py" or not file.endswith(".py"):
+            continue
+        
+        # Load module
+        module = import_module((module_path + file.removesuffix(".py")))
+        module.load(client)
+
 
 
 def save_json(path: str, object: dict):
