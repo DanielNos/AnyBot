@@ -5,27 +5,17 @@
         "joined",
         "clear",
         "convert",
-        "new_poll",
-        "lock_poll"
+        "poll create",
+        "poll lock",
+        "role_giver create"
     ],
-    "Role Givers": [
-        "new_rg",
-        "del_rg",
-        "add_rg_role",
-        "lock_rg"
-    ],
-    "Tic-Tac-Toe": [
+    "Games": [
         "tictactoe singleplayer",
         "tictactoe multiplayer",
         "tictactoe play",
-        "tictactoe concede"
-    ],
-    "Hangman": [
+        "tictactoe concede",
         "hangman start",
-        "hangman add_player",
-        "hangman leave",
-        "hangman guess",
-        "hangman guess_expression"
+        "hangman start_expression_pack"
     ],
     "Welcome Message": [
         "welcome_message set",
