@@ -1,7 +1,7 @@
 import sys, nextcord, asyncio
 from nextcord.ext import commands
 from nextcord.ui import View, Button
-from nextcord import Interaction, slash_command, VoiceClient, ButtonStyle
+from nextcord import Interaction, slash_command, ButtonStyle
 
 sys.path.append("../NosBot")
 import logger as log
@@ -63,6 +63,8 @@ class SoundBoardControls(View):
         if self.player:
             await self.player.connect()
             self.player = None
+            self.children[len(self.children)-1].disabled = False
+            self.children[len(self.children)-2].disabled = True
         await interaction.response.defer()
 
 
@@ -70,6 +72,8 @@ class SoundBoardControls(View):
         if self.player:
             await self.player.disconnect()
             self.player = None
+            self.children[len(self.children)-2].disabled = False
+            self.children[len(self.children)-1].disabled = True
         await interaction.response.defer()
     
 

@@ -19,11 +19,11 @@ def import_commands(path: str, client):
 
     # Go trough all files
     for file in listdir(path):
-        # Load contents of subdirectories
-        if isdir(file) and not "__" in file and not file[0] == ".":
-            import_commands(path + file)
         # Ignore everything except modules
-        elif file == "__init__.py" or not file.endswith(".py"):
+        if file == "__init__.py" or not file.endswith(".py"):
+            # Load contents of subdirectories
+            if isdir(path + file) and not "__" in file and not file[0] == ".":
+                import_commands(path + file, client)
             continue
         
         # Load module
