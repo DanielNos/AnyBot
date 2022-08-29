@@ -11,6 +11,10 @@
     "poll create [question]": "Creates a new poll. Poll designer will be shown.",
     "poll lock [poll ID]": "Locks specified poll preventing users from voting anymore.",
 
+    "welcome_message set [message]": "Sets a welcome message for your server. You have to use \"[user]\" tag inside the message. It will be replaced with user mention.",
+    "welcome_message show": "Shows you the current welcome message on current server.",
+    "welcome_message remove": "Removes welcome message from current server.",
+
     "tictactoe singleplayer [difficulty]": "Starts a game of tic-tac-toe. You have to specify the difficulty of your AI opponent.",
     "tictactoe multiplayer [opponent]": "Starts a a game of tic-tac-toe against selected opponent.",
     "tictactoe play [row] [column]": "Places your symbol on selected space. You have to be in a game of tic-tac-toe to use this command and it has to be your turn.",
@@ -19,7 +23,5 @@
     "hangman start [expression]": "Starts a game of hangman with your specified expression.",
     "hangman start_expression_pack [expression pack]": "Starts a game of hangman with random expression from selected topic.",
 
-    "welcome_message set [message]": "Sets a welcome message for your server. You have to use \"[user]\" tag inside the message. It will be replaced with user mention.",
-    "welcome_message show": "Shows you the current welcome message on current server.",
-    "welcome_message remove": "Removes welcome message from current server."
+    "flood [difficulty] [size] [colors]": "Starts a game of flood."
 }

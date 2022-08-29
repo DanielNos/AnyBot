@@ -16,7 +16,7 @@ python = "py"
 if platform.system() == "Linux":
     python = "python3"
 
-for module in ["nextcord", "colorama", "emoji", "PyNaCl", "discord-emoji"]:
+for module in ["nextcord", "colorama", "emoji", "PyNaCl", "discord-emoji", "pypng"]:
     os.system(python + " -m pip install " + module)
 
 print("Bot is ready. Run main.py to start it.")

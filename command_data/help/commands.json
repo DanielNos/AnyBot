@@ -15,7 +15,8 @@
         "tictactoe play",
         "tictactoe concede",
         "hangman start",
-        "hangman start_expression_pack"
+        "hangman start_expression_pack",
+        "flood"
     ],
     "Welcome Message": [
         "welcome_message set",
