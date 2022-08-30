@@ -1,8 +1,10 @@
+from multiprocessing import parent_process
 import sys
 from nextcord.ext import commands
 from nextcord.ui import View, Button
 from nextcord import ButtonStyle, Embed, SlashOption, Interaction, slash_command
 from random import randint
+from copy import deepcopy
 
 sys.path.append("../NosBot")
 import logger as log
@@ -17,12 +19,13 @@ COLOR_CIRCLES = ["🔴", "🟢", "🔵", "🟠", "🟡", "🟣", "🟤", "⚪"]
 
 
 class Controls(View):
-    def __init__(self, difficulty: str, color_count: int, size: int, first_color: int):
+    def __init__(self, has_difficulty: bool, color_count: int, size: int, first_color: int, max_turns: int):
         super().__init__()
-        self.difficulty = difficulty
+        self.has_difficulty = has_difficulty
         self.color_count = color_count
         self.size = size
-        self.turn = 0
+        self.turn = 1
+        self.max_turns = max_turns
 
         callbacks = [self.change_color0, self.change_color1, self.change_color2, self.change_color3, self.change_color4, self.change_color5, self.change_color6, self.change_color7]
         
@@ -71,15 +74,22 @@ class Controls(View):
         board_str = board_arr_to_str(board)
 
         embed: Embed = interaction.message.embeds[0]
-        embed.set_field_at(0, name="Turn: " + str(self.turn), value=board_str)
+        embed.set_field_at(0, name="Turn: " + str(self.turn) + (self.has_difficulty) * ("/" + str(self.max_turns)), value=board_str)
 
-        # Check for victory
-        if is_single_color(board):
+        single_color = is_single_color(board)
+        
+        # Victory
+        if single_color:
             embed.add_field(name="🎉 You won! 🎉", value="Congratulations!", inline=False)
             embed.set_footer(text="")
             self.children = []
+        # Defeat
+        elif self.has_difficulty and self.turn >= self.max_turns:
+            embed.add_field(name="💢 You lost! 💢", value="Better luck next time!", inline=False)
+            embed.set_footer(text="")
+            self.children = []
+        # Next turn
         else:
-            # Disable current color button
             for i in range(len(self.children)):
                 self.children[i].disabled = (i == color_index)
 
@@ -94,10 +104,10 @@ class Flood(commands.Cog):
 
     @slash_command(guild_ids=TEST_GUILDS, description="Start a game of flood.", force_global=PRODUCTION)
     async def flood(self, interaction: Interaction,
-    difficulty: str = SlashOption(choices=["Easy", "Medium", "Hard", "None"]),
+    difficulty: int = SlashOption(choices={ "Hard": 0, "Medium": 1, "Easy": 2, "None": -1}),
     size: int = SlashOption(choices={"8x8": 8, "9x9": 9, "10x10": 10, "11x11": 11, "12x12": 12, "13x13": 13, "14x14": 14}),
     colors: int = SlashOption(choices=[3, 4, 5, 6, 7, 8])):
-        self.logger.log_info(f"{complete_name(interaction.user)} has called command: flood {difficulty} {str(size)}x{str(size)} {str(colors)}.")
+        self.logger.log_info(f"{complete_name(interaction.user)} has called command: flood difficulty={str(difficulty)} size={str(size)}x{str(size)} color_count={str(colors)}.")
 
         # Generate board
         board = []
@@ -112,12 +122,20 @@ class Flood(commands.Cog):
         # Do the initial flood
         board = replace(board, board[0][0], COLOR_CIRCLES[index])
         
+        # Calculate max turn count
+        diff_text = "Turn: 1"
+        max_turns = 0
+        if difficulty != -1:
+            multiplier = 1 + int(colors > 5) + int(colors > 6)
+            max_turns = solution_step_count(board, colors) + (int(difficulty > 10) + int(difficulty > 12)) * multiplier
+            diff_text += "/" + str(max_turns)
+
         # Create game embed
         embed = Embed(title="Flood")
-        embed.add_field(name="Turn: 0", value=board_arr_to_str(board))
+        embed.add_field(name=diff_text, value=board_arr_to_str(board))
         embed.set_footer(text="Convert all the tiles to single color!")
 
-        await interaction.response.send_message(embed=embed, view=Controls(difficulty, colors, size, index), ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=Controls((difficulty != -1), colors, size, index, max_turns), ephemeral=True)
 
 
 def replace(board, prev_color: str, new_color: str, x = 0, y = 0):
@@ -175,6 +193,7 @@ def board_arr_to_str(board):
 
 
 def count_color(board, color: str, x = 0, y = 0):
+    board[x][y] = "!"
     count = 1
     # Recursively convert tile's neighbors
     if x > 0 and board[x-1][y] == color:
@@ -191,33 +210,72 @@ def count_color(board, color: str, x = 0, y = 0):
 
     return count
 
-def solution_step_count(board, color_count: int) -> int:
-    prev_color = COLOR_CIRCLES.index(board[0][0])
-    board = replace(board, board[0][0], COLOR_SQUARES[prev_color])
 
-    # Create all possible states
-    states = []
-    for i in range(color_count-1):
-        if i == prev_color:
-            continue
-        
-        state = replace(board, board[0][0], COLOR_SQUARES[prev_color])
-        states.append(replace(state, state[0][0], COLOR_CIRCLES[i]))
+class Node():
+    def __init__(self, board, parent_node, color_count: int):
+        self.board = board
+        self.parent = parent_node
+        self.color_count = color_count
     
-    # Evaluate states
-    color_counts = [count_color(states[0], states[0][0][0])]
-    last = color_counts[0]
-    same = True
-    for state in states[1:]:
-        count = count_color(board, board[0][0])
-        if count != last:
-            same = False
-        last = count
-        color_counts.append(count)
+
+    def generate_states(self):
+        prev_color = COLOR_CIRCLES.index(self.board[0][0])
+        
+        # Create new node for every color flood option
+        new_nodes = []
+        for i in range(self.color_count):
+            if i == prev_color:
+                continue
+            
+            # Do the flood and create new node
+            state = replace(deepcopy(self.board), self.board[0][0], COLOR_SQUARES[i])
+            node = Node(replace(state, state[0][0], COLOR_CIRCLES[i]), self, self.color_count)
+            new_nodes.append(node)
+        
+        return new_nodes
+
+    
+    def is_solved(self) -> bool:
+        color = self.board[0][0]
+
+        for y in range(len(self.board)):
+            for x in range(len(self.board)):
+                if color != self.board[x][y]:
+                    return False
+        
+        return True
 
 
-    best = color_counts.index(max(color_counts))
-    return 1 + solution_step_count(states[best], color_count)
+def solution_step_count(board, color_count: int) -> int:
+    root = Node(board, None, color_count)
+    queue = [root]
+
+    while True:
+        # Get the oldest node
+        node = queue.pop(0)
+
+        # If the node is solved return the number of it's parents
+        if node.is_solved():
+            node_count = 1
+
+            while node.parent != None:
+                node = node.parent
+                node_count += 1
+
+            return node_count
+        
+        # Create all possible moves
+        valid_nodes = node.generate_states()
+        
+        # Count the new area of all moves
+        color_counts = []
+        for valid_node in valid_nodes:
+            color_counts.append(count_color(deepcopy(valid_node.board), valid_node.board[0][0]))
+        
+        # Get the move with the new largest area of color
+        index = color_counts.index(max(color_counts))
+        # Add it to the end of the queue
+        queue.append(valid_nodes[index])
 
 
 def load(client: commands.Bot):
