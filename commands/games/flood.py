@@ -1,4 +1,3 @@
-from multiprocessing import parent_process
 import sys
 from nextcord.ext import commands
 from nextcord.ui import View, Button
@@ -19,9 +18,9 @@ COLOR_CIRCLES = ["🔴", "🟢", "🔵", "🟠", "🟡", "🟣", "🟤", "⚪"]
 
 
 class Controls(View):
-    def __init__(self, has_difficulty: bool, color_count: int, size: int, first_color: int, max_turns: int):
+    def __init__(self, difficulty: bool, color_count: int, size: int, first_color: int, max_turns: int):
         super().__init__()
-        self.has_difficulty = has_difficulty
+        self.difficulty = difficulty
         self.color_count = color_count
         self.size = size
         self.turn = 1
@@ -74,7 +73,7 @@ class Controls(View):
         board_str = board_arr_to_str(board)
 
         embed: Embed = interaction.message.embeds[0]
-        embed.set_field_at(0, name="Turn: " + str(self.turn) + (self.has_difficulty) * ("/" + str(self.max_turns)), value=board_str)
+        embed.set_field_at(0, name="Turn: " + str(self.turn) + (self.difficulty != -1) * ("/" + str(self.max_turns)), value=board_str)
 
         single_color = is_single_color(board)
         
@@ -83,18 +82,30 @@ class Controls(View):
             embed.add_field(name="🎉 You won! 🎉", value="Congratulations!", inline=False)
             embed.set_footer(text="")
             self.children = []
+            self.add_record(interaction.user.id, True)
         # Defeat
-        elif self.has_difficulty and self.turn >= self.max_turns:
+        elif self.difficulty != -1 and self.turn >= self.max_turns:
             embed.add_field(name="💢 You lost! 💢", value="Better luck next time!", inline=False)
             embed.set_footer(text="")
             self.children = []
+            self.add_record(interaction.user.id, False)
         # Next turn
         else:
             for i in range(len(self.children)):
                 self.children[i].disabled = (i == color_index)
 
         await interaction.response.edit_message(embed=embed, view=self)
+    
 
+    def add_record(self, user_id: int, victory: bool):
+        dataManager.add_game_record(user_id, "flood", victory, False)
+
+        if not victory:
+            return
+        
+        experience = 5 + int(self.size > 10) + int(self.size > 12) + int(self.color_count >= 5) + int(self.color_count >= 7) - int(self.difficulty == 1) - 3 * int(self.difficulty == 2)
+        dataManager.add_experience_amount(user_id, experience)
+        
 
 class Flood(commands.Cog):
     def __init__(self, client: commands.Bot):
@@ -105,8 +116,8 @@ class Flood(commands.Cog):
     @slash_command(guild_ids=TEST_GUILDS, description="Start a game of flood.", force_global=PRODUCTION)
     async def flood(self, interaction: Interaction,
     difficulty: int = SlashOption(choices={ "Hard": 0, "Medium": 1, "Easy": 2, "None": -1}),
-    size: int = SlashOption(choices={"8x8": 8, "9x9": 9, "10x10": 10, "11x11": 11, "12x12": 12, "13x13": 13, "14x14": 14}),
-    colors: int = SlashOption(choices=[3, 4, 5, 6, 7, 8])):
+    size: int = SlashOption(choices={"8x8": 8, "9x9": 9, "10x10": 10, "11x11": 11, "12x12": 12, "13x13": 13, "14x14": 14}, description="The size of the board."),
+    colors: int = SlashOption(choices=[3, 4, 5, 6, 7, 8], description="How many colors there will be.")):
         self.logger.log_info(f"{complete_name(interaction.user)} has called command: flood difficulty={str(difficulty)} size={str(size)}x{str(size)} color_count={str(colors)}.")
 
         # Generate board
@@ -126,8 +137,15 @@ class Flood(commands.Cog):
         diff_text = "Turn: 1"
         max_turns = 0
         if difficulty != -1:
-            multiplier = 1 + int(colors > 5) + int(colors > 6)
-            max_turns = solution_step_count(board, colors) + (int(difficulty > 10) + int(difficulty > 12)) * multiplier
+            multiplier = 1 + int(colors >= 5) + int(colors >= 7)
+            additional_turns = (int(size > 10) + int(size > 12)) * multiplier
+            
+            if difficulty == 1:
+                additional_turns -= round(additional_turns / 2.0)
+            if difficulty == 0:
+                additional_turns = 0
+            
+            max_turns = solution_step_count(board, colors) + additional_turns
             diff_text += "/" + str(max_turns)
 
         # Create game embed
@@ -135,7 +153,7 @@ class Flood(commands.Cog):
         embed.add_field(name=diff_text, value=board_arr_to_str(board))
         embed.set_footer(text="Convert all the tiles to single color!")
 
-        await interaction.response.send_message(embed=embed, view=Controls((difficulty != -1), colors, size, index, max_turns), ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=Controls(difficulty, colors, size, index, max_turns), ephemeral=True)
 
 
 def replace(board, prev_color: str, new_color: str, x = 0, y = 0):

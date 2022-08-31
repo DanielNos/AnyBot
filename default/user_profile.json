@@ -10,6 +10,10 @@
         "tictactoe": {
             "played": 0,
             "won": 0
+        },
+        "flood": {
+            "played": 0,
+            "won": 0
         }
     }
 }

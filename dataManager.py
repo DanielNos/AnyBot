@@ -344,7 +344,7 @@ def load_sounds():
     return sounds
 
 
-def __add_experience(user_id: int, experience: int):
+def add_experience_amount(user_id: int, experience: int):
     # Load profile
     profile: dict = load_profile(user_id)
     
@@ -368,13 +368,13 @@ def add_experience(user_id: int, source: str):
     
     # Add experience
     experience = json.load(open("./command_data/user_profiles/experience.json", encoding="utf-8"))
-    __add_experience(user_id, experience[source])
+    add_experience_amount(user_id, experience[source])
     
     # Save profile
     save_json("./data/user_profiles/" + str(user_id) + ".json", profile)
 
 
-def add_game_record(user_id: int, game: str, won: bool):
+def add_game_record(user_id: int, game: str, won: bool, add_exp = True):
     # Load profile
     profile = load_profile(user_id)
 
@@ -386,5 +386,6 @@ def add_game_record(user_id: int, game: str, won: bool):
     save_json("./data/user_profiles/" + str(user_id) + ".json", profile)
 
     # Add experience
-    experience = json.load(open("./command_data/user_profiles/experience.json", encoding="utf-8"))
-    __add_experience(user_id, experience[game][("win" * won) + ((not won) * "defeat")])
+    if add_exp:
+        experience = json.load(open("./command_data/user_profiles/experience.json", encoding="utf-8"))
+        add_experience_amount(user_id, experience[game][("win" * won) + ((not won) * "defeat")])
