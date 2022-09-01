@@ -6,7 +6,7 @@ from nextcord import slash_command, ButtonStyle, SlashOption, PartialInteraction
 from random import choice
 
 sys.path.append("../../NosBot")
-import dataManager, emojiDict, access
+import dataManager, formatting, access
 import logger as log
 from formatting import complete_name
 
@@ -312,7 +312,7 @@ class Game:
         letters = ""
         for i in range(len(LETTERS)):
             if not self.letters[i]:
-                letters += emojiDict.LETTERS[i] + " "
+                letters += formatting.LETTERS[i] + " "
             else:
                 letters += LETTERS[i].upper() + " "
 

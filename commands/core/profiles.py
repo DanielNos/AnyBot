@@ -44,6 +44,9 @@ class Profiles(commands.Cog):
         tictactoe = "Win Rate: " + get_win_rate(games["tictactoe"]) + "\nGames Played: " + str(games["tictactoe"]["played"])
         embed.add_field(name="Tic-Tac-Toe", value=tictactoe)
 
+        flood = "Win Rate: " + get_win_rate(games["flood"]) + "\nGames Played: " + str(games["flood"]["played"])
+        embed.add_field(name="Flood", value=flood)
+
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 

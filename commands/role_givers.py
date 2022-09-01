@@ -4,7 +4,7 @@ from nextcord.ui import View, Button, Modal, TextInput
 from nextcord import slash_command, ButtonStyle, Message, Interaction, RawMessageDeleteEvent, Role, Guild, PartialInteractionMessage
 
 sys.path.append("../NosBot")
-import emojiDict, dataManager, access
+import dataManager, access, formatting
 import logger as log
 from dataClasses import RoleGiver
 
@@ -63,7 +63,7 @@ class AddRole(Modal):
         
         # Add role to role giver message
         rg.role_ids.append(role.id)
-        reaction_emoji = emojiDict.NUMBERS[len(rg.role_ids)]
+        reaction_emoji = formatting.NUMBERS[len(rg.role_ids)]
 
         await message.edit(content=message.content + "\n" + reaction_emoji + " " + role.mention + " " + self.description.value, view=RoleGiverDesigner(self.logger, True))
         await message.add_reaction(reaction_emoji)
@@ -203,7 +203,7 @@ class RoleGivers(commands.Cog):
         role_ids = role_givers[event.message_id].role_ids
 
         # Remove reaction if it isn't a valid role number
-        if not event.emoji.name in list(emojiDict.NUMBERS.values())[1:len(role_ids)+1]:
+        if not event.emoji.name in list(formatting.NUMBERS.values())[1:len(role_ids)+1]:
             message: Message = await self.client.get_channel(event.channel_id).fetch_message(event.message_id)
             for reaction in message.reactions:
                 if str(reaction.emoji) == str(event.emoji.name):

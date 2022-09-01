@@ -6,7 +6,7 @@ from nextcord import slash_command, ButtonStyle, Message, User, Embed, Interacti
 
 sys.path.append("../NosBot")
 import logger as log
-import dataManager, emojiDict, access
+import dataManager, formatting, access
 from dataClasses import Poll
 
 TEST_GUILDS = dataManager.load_test_guilds()
@@ -37,7 +37,7 @@ class AddOption(Modal):
         uni_emoji = discord_emoji.to_uni(emoji)
         # Use letter if emoji couldn't be found
         if not uni_emoji:
-            uni_emoji = emojiDict.LETTERS[len(self.view.poll.emojis)]
+            uni_emoji = formatting.LETTERS[len(self.view.poll.emojis)]
         
         self.view.poll.emojis.append(uni_emoji)
 
@@ -125,7 +125,7 @@ class Polls(commands.Cog):
     @poll.subcommand(description="Create a poll.")
     async def create(self, interaction: Interaction, question: str):
         # Log
-        self.logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: poll create " + question + ".")
+        self.logger.log_info(formatting.complete_name(interaction.user) + " has called command: poll create " + question + ".")
 
         # Return if user doesn't have permission to run command
         if not access.has_access(interaction.user, interaction.guild, "Manage Polls"):
@@ -144,7 +144,7 @@ class Polls(commands.Cog):
     @poll.subcommand(description="Locks a poll so users won't be able to vote anymore.")
     async def lock(self, interaction: Interaction, poll_id: str):
         # Log
-        self.logger.log_info(interaction.user.name + "#" + str(interaction.user.discriminator) + " has called command: lock_poll " + poll_id + ".")
+        self.logger.log_info(formatting.complete_name(interaction.user) + " has called command: lock_poll " + poll_id + ".")
 
         # Return if user doesn't have permission to run command
         if not access.has_access(interaction.user, interaction.guild, "Manage Polls"):
