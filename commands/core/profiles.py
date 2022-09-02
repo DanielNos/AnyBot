@@ -47,6 +47,9 @@ class Profiles(commands.Cog):
         flood = "Win Rate: " + get_win_rate(games["flood"]) + "\nGames Played: " + str(games["flood"]["played"])
         embed.add_field(name="Flood", value=flood)
 
+        mastermind = "Win Rate: " + get_win_rate(games["mastermind"]) + "\nGames Played: " + str(games["mastermind"]["played"])
+        embed.add_field(name="Mastermind", value=mastermind)
+
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 

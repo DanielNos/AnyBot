@@ -138,13 +138,14 @@ class Flood(commands.Cog):
         max_turns = 0
         if difficulty != -1:
             multiplier = 1 + int(colors >= 5) + int(colors >= 7)
-            additional_turns = (int(size > 10) + int(size > 12)) * multiplier
-            
-            if difficulty == 1:
-                additional_turns -= round(additional_turns / 2.0)
+
+            if difficulty == 1 and multiplier > 1:
+                multiplier -= 1
             if difficulty == 0:
-                additional_turns = 0
-            
+                multiplier = 0
+
+            additional_turns = (1 + (int(size > 10) + int(size > 12))) * multiplier
+
             max_turns = solution_step_count(board, colors) + additional_turns
             diff_text += "/" + str(max_turns)
 
@@ -266,11 +267,15 @@ class Node():
 
 def solution_step_count(board, color_count: int) -> int:
     root = Node(board, None, color_count)
-    queue = [root]
+
+    stack = [root]
+
+    visited = set()
+    visited.add(root)
 
     while True:
         # Get the oldest node
-        node = queue.pop(0)
+        node = stack.pop()
 
         # If the node is solved return the number of it's parents
         if node.is_solved():
@@ -283,17 +288,29 @@ def solution_step_count(board, color_count: int) -> int:
             return node_count
         
         # Create all possible moves
-        valid_nodes = node.generate_states()
+        nodes = node.generate_states()
+        new_nodes = []
+        for node in nodes:
+            if node not in visited:
+                new_nodes.append(node)
         
         # Count the new area of all moves
         color_counts = []
-        for valid_node in valid_nodes:
-            color_counts.append(count_color(deepcopy(valid_node.board), valid_node.board[0][0]))
+        for node in new_nodes:
+            color_counts.append(count_color(deepcopy(node.board), node.board[0][0]))
+            visited.add(node)
         
-        # Get the move with the new largest area of color
-        index = color_counts.index(max(color_counts))
-        # Add it to the end of the queue
-        queue.append(valid_nodes[index])
+        # Sort both lists by color counts
+        index = list(range(len(color_counts)))
+
+        index.sort(key = color_counts.__getitem__)
+
+        color_counts[:] = [color_counts[i] for i in index]
+        new_nodes[:] = [new_nodes[i] for i in index]
+        
+        # Add new nodes to the stack
+        for node in new_nodes:
+            stack.append(node)
 
 
 def load(client: commands.Bot):

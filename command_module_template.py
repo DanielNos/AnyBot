@@ -10,6 +10,7 @@ from formatting import complete_name
 TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
 
+
 class Template(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
