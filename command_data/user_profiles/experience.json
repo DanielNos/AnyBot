@@ -11,5 +11,9 @@
         "win": 5,
         "defeat": 0
     },
+    "wordle": {
+        "win": 5,
+        "defeat": 0
+    },
     "sound board": 1
 }

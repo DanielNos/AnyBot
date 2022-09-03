@@ -50,6 +50,9 @@ class Profiles(commands.Cog):
         mastermind = "Win Rate: " + get_win_rate(games["mastermind"]) + "\nGames Played: " + str(games["mastermind"]["played"])
         embed.add_field(name="Mastermind", value=mastermind)
 
+        wordle = "Win Rate: " + get_win_rate(games["wordle"]) + "\nGames Played: " + str(games["wordle"]["played"])
+        embed.add_field(name="Wordle", value=wordle)
+
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 

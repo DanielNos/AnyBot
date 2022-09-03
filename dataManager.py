@@ -389,3 +389,8 @@ def add_game_record(user_id: int, game: str, won: bool, add_exp = True):
     if add_exp:
         experience = json.load(open("./command_data/user_profiles/experience.json", encoding="utf-8"))
         add_experience_amount(user_id, experience[game][("win" * won) + ((not won) * "defeat")])
+
+
+def load_wordle_words():
+    file = open("./command_data/wordle/words.txt", encoding="utf-8")
+    return set(file.read().split("\n"))

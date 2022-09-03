@@ -18,6 +18,10 @@
         "mastermind": {
             "played": 0,
             "won": 0
+        },
+        "wordle": {
+            "played": 0,
+            "won": 0
         }
     }
 }
