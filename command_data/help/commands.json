@@ -16,7 +16,9 @@
         "tictactoe concede",
         "hangman start",
         "hangman start_expression_pack",
-        "flood"
+        "flood",
+        "mastermind",
+        "wordle"
     ],
     "Welcome Message": [
         "welcome_message set",

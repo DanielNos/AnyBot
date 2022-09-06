@@ -23,5 +23,7 @@
     "hangman start [expression]": "Starts a game of hangman with your specified expression.",
     "hangman start_expression_pack [expression pack]": "Starts a game of hangman with random expression from selected topic.",
 
-    "flood [difficulty] [size] [colors]": "Starts a game of flood."
+    "flood [difficulty] [size] [colors]": "Starts a game of flood.",
+    "mastermind": "Starts a game of mastermind.",
+    "wordle": "Starts a game of Wordle."
 }
