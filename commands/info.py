@@ -5,6 +5,7 @@ from nextcord import slash_command, Embed, Interaction, Member
 sys.path.append("../NosBot")
 import logger as log
 import dataManager
+from formatting import long_datetime
 
 TEST_GUILDS = dataManager.load_test_guilds()
 PRODUCTION = dataManager.is_production()
@@ -35,8 +36,8 @@ class Info(commands.Cog):
         embed.set_thumbnail(target.avatar.url)
 
         embed.add_field(name="ID:", value=target.id, inline=False)
-        embed.add_field(name="Created:", value=target.created_at.strftime("%d-%m-%Y %H:%M:%S"), inline=True)
-        embed.add_field(name="Joined:", value=target.joined_at.strftime("%d-%m-%Y %H:%M:%S"), inline=False)
+        embed.add_field(name="Created:", value=long_datetime(target.created_at), inline=True)
+        embed.add_field(name="Joined:", value=long_datetime(target.joined_at), inline=False)
         embed.add_field(name="Nickname:", value=target.nick, inline=True)
         embed.add_field(name="Is Bot:", value=target.bot, inline=True)
 
@@ -51,7 +52,7 @@ class Info(commands.Cog):
 
         embed.add_field(name="Roles:", value=roles, inline=False)
         
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
     @slash_command(guild_ids=TEST_GUILDS, description="Says when a member joined.", force_global=PRODUCTION)
@@ -64,7 +65,7 @@ class Info(commands.Cog):
         logger.log_info(log_message + ".")
 
         user: Member = member or interaction.user
-        await interaction.response.send_message(user.name + " joined in " + user.joined_at.strftime("%d-%m-%Y %H:%M:%S") + ".")
+        await interaction.response.send_message(user.name + " joined " + long_datetime(user.joined_at) + ".", ephemeral=True)
     
 
 def load(client: commands.Bot):

@@ -9,3 +9,7 @@ def complete_name(user: User) -> str:
 def letter_to_emoji(letter: str) -> str:
     index = "abcdefghijklmnopqrstuvwxyz".index(letter[0].lower())
     return LETTERS[index]
+
+
+def long_datetime(datetime) -> str:
+    return "<t:" + str(round(datetime.timestamp())) + ":f>"
