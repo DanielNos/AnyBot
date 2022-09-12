@@ -1,24 +1,22 @@
 import nextcord, sys
 from nextcord.ext import commands
 from nextcord.ui import View, Button, Modal, TextInput
-from nextcord import slash_command, ButtonStyle, Message, Interaction, RawMessageDeleteEvent, Role, Guild, PartialInteractionMessage
+from nextcord import slash_command, ButtonStyle, Message, Interaction, RawMessageDeleteEvent, Role, Guild
 
 sys.path.append("../NosBot")
 import dataManager, access, formatting
 import logger as log
-from dataClasses import RoleGiver
 
 PRODUCTION = dataManager.is_production()
 TEST_GUILDS = dataManager.load_test_guilds()
 
-blueprints = {}
 role_givers = {}
 
 
 class AddRole(Modal):
-    def __init__(self, logger: log.Logger):
+    def __init__(self, view):
         super().__init__(title="Add Role")
-        self.logger = logger
+        self.view = view
 
         # Add inputs
         self.role_input = TextInput(label="Role Name:", min_length=1, max_length=50, required=True)
@@ -36,43 +34,26 @@ class AddRole(Modal):
         await interaction.response.defer()
     
 
-    async def add_rg_role(self, interaction: Interaction, role: Role):
-        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: add_rg_role " + role.name + ".")
-        
-        # Return if user doesn't have permission to run command
-        if not access.has_access(interaction.user, interaction.guild, "Manage Role Givers"):
-            await interaction.response.send_message("🚫 FAILED. You don't have permission manage role givers.", ephemeral=True)
-            return
-        
-        # Cancel if message was deleted
-        message: Message = await get_bp_message(interaction)
-        if message == None:
-            await interaction.response.send_message("🚫 FAILED. The role giver message was deleted! You can create new one using /new_rg.", ephemeral=True)
-            return
-
-        # Cancel if no role giver exists
-        if not interaction.user.id in blueprints.keys() or message == None:
-            await interaction.response.send_message("🚫 FAILED. You don't have an unfinished role giver! You can create one by using /new_rg.", ephemeral=True)
-            return
-
-        rg: RoleGiver = blueprints[interaction.user.id]
+    async def add_rg_role(self, interaction: Interaction, role: Role):    
         # Cancel if role giver is full
-        if len(rg.role_ids) >= 9:
-            await interaction.response.send_message("🚫 FAILED. Role giver cant't contain any more roles! Complete it using /lock_rg then create a new role giver using /new_rg for remaining roles.", ephemeral=True)
+        if len(self.view.role_ids) >= 9:
+            await interaction.response.send_message("🚫 FAILED. Role giver cant't contain any more roles!", ephemeral=True)
             return
         
         # Add role to role giver message
-        rg.role_ids.append(role.id)
-        reaction_emoji = formatting.NUMBERS[len(rg.role_ids)]
+        self.view.role_ids.append(role.id)
+        self.view.children[2].disabled = False
+        reaction_emoji = formatting.NUMBERS[len(self.view.role_ids)]
 
-        await message.edit(content=message.content + "\n" + reaction_emoji + " " + role.mention + " " + self.description.value, view=RoleGiverDesigner(self.logger, True))
-        await message.add_reaction(reaction_emoji)
+        await interaction.response.edit_message(content=interaction.message.content + "\n" + reaction_emoji + " " + role.mention + " " + self.description.value, view=self.view)
+        await interaction.message.add_reaction(reaction_emoji)
 
 
 class RoleGiverDesigner(View):
-    def __init__(self, logger: log.Logger, enable_complete = False):
+    def __init__(self, author_id: int):
         super().__init__()
-        self.logger = logger
+        self.author_id = author_id
+        self.role_ids = []
 
         # Add controls
         button: Button = Button(style=ButtonStyle.blurple, label="Add Role")
@@ -83,72 +64,46 @@ class RoleGiverDesigner(View):
         button.callback = self.del_rg
         self.add_item(button)
 
-        button: Button = Button(style=ButtonStyle.green, label="Complete", disabled=(not enable_complete))
+        button: Button = Button(style=ButtonStyle.green, label="Complete", disabled=True)
         button.callback = self.lock_rg
         self.add_item(button)
     
 
     async def add_rg_role(self, interaction: Interaction):
-        await interaction.response.send_modal(AddRole(self.logger))
+        # Return if user doesn't have permission manage role givers
+        if not access.has_access(interaction.user, interaction.guild, "Manage Role Givers"):
+            await interaction.response.send_message("🚫 FAILED. You don't have permission manage role givers.", ephemeral=True)
+            return
+
+        await interaction.response.send_modal(AddRole(self))
     
 
     async def del_rg(self, interaction: Interaction):
-        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: del_rg.")
-
-        # Return if user doesn't have permission to run command
+        # Return if user doesn't have permission manage role givers
         if not access.has_access(interaction.user, interaction.guild, "Manage Role Givers"):
             await interaction.response.send_message("🚫 FAILED. You don't have permission manage role givers.", ephemeral=True)
             return
 
-        # Check if it was already deleted
-        message: Message = await get_bp_message(interaction)
-        if message == None:
-            await interaction.response.send_message("🚫 FAILED. The role giver message was deleted! You can create new one using /new_rg.", ephemeral=True)
-            return
-        
-        # Delete a role giver if it does exist
-        if not interaction.user.id in blueprints.keys():
-            await interaction.response.send_message("🚫 FAILED. You don't have an unfinished role giver! You can create one by using /new_rg.", ephemeral=True)
-        else:
-            message: Message = await interaction.channel.fetch_message(blueprints.pop(interaction.user.id).message_id)
-            await message.delete()
+        await interaction.message.delete()
     
 
     async def lock_rg(self, interaction: Interaction):
-        self.logger.log_info(interaction.user.name + "#" + interaction.user.discriminator + " has called command: lock_rg.")
-
-        # Return if user doesn't have permission to run command
+        # Return if user doesn't have permission manage role givers
         if not access.has_access(interaction.user, interaction.guild, "Manage Role Givers"):
             await interaction.response.send_message("🚫 FAILED. You don't have permission manage role givers.", ephemeral=True)
             return
-
-        # Cancel if message was deleted
-        message: Message = await get_bp_message(interaction)
-        if message == None:
-            await interaction.response.send_message("🚫 FAILED. The role giver message was deleted! You can create new one using /new_rg.", ephemeral=True)
-            return
-
-        # Cancel if no role giver exists
-        if not interaction.user.id in blueprints.keys():
-            await interaction.response.send_message("🚫 FAILED. You don't have an unfinished role giver! You can create one by using /new_rg.", ephemeral=True)
-            return
         
-        rg: RoleGiver = blueprints[interaction.user.id]
         # Cancel if role giver doesn't have any roles
-        if len(rg.role_ids) < 1:
-            await interaction.response.send_message("🚫 FAILED. Role giver doesn't have any roles! You can add roles to it using /add_rg_role [role] [*description].", ephemeral=True)
+        if len(self.role_ids) < 1:
+            await interaction.response.defer()
             return
-        
-        # Remove guide text from role giver message
-        await message.edit(content="_Click on a number to receive a role!_" + message.content[message.content.find("\n"):])
 
         # Move role giver from blueprints dictionary to role_givers dictionary
-        role_givers[rg.message_id] = blueprints.pop(interaction.user.id)
+        role_givers[interaction.message.id] = self.role_ids
         dataManager.save_role_givers(role_givers)
 
         # Remove controls
-        self.children.clear()
-        await interaction.response.edit_message(view=self)
+        await interaction.response.edit_message(content="_Click on a number to receive a role!_" + interaction.message.content[interaction.message.content.find("\n"):], view=None)
 
 
 class RoleGivers(commands.Cog):
@@ -177,17 +132,7 @@ class RoleGivers(commands.Cog):
             await interaction.response.send_message("🚫 FAILED. You don't have permission manage role givers.", ephemeral=True)
             return
 
-        # Remove blueprint if message was deleted
-        await get_bp_message(interaction)
-        
-        # Create a new role giver if one doesn't already exist
-        if not interaction.user.id in (blueprints.keys()):
-            response: PartialInteractionMessage = await interaction.response.send_message(content="Add roles to this role giver and then complete it using the buttons below.", view=RoleGiverDesigner(self.logger), ephemeral=True)
-            
-            message: Message = await response.fetch()
-            blueprints[interaction.user.id] = RoleGiver(message.id)
-        else:
-            await interaction.response.send_message("🚫 FAILED. You already have an unfinished role giver! Complete it or delete it using the controls under it.", ephemeral=True)
+        await interaction.response.send_message(content="Add roles to this role giver and then complete it using the buttons below.", view=RoleGiverDesigner(interaction.user.id))
 
 
     @commands.Cog.listener()
@@ -200,7 +145,7 @@ class RoleGivers(commands.Cog):
         if not event.message_id in role_givers.keys():
             return
         
-        role_ids = role_givers[event.message_id].role_ids
+        role_ids = role_givers[event.message_id]
 
         # Remove reaction if it isn't a valid role number
         if not event.emoji.name in list(formatting.NUMBERS.values())[1:len(role_ids)+1]:
@@ -215,9 +160,11 @@ class RoleGivers(commands.Cog):
         guild: nextcord.Guild = await self.client.fetch_guild(event.guild_id)
         role: Role = guild.get_role(role_ids[int(str(event.emoji.name)[0])-1])
         
+        print(str(role))
+
         await event.member.add_roles(role)
 
-        self.logger.log_info(event.member.name + "#" + event.member.discriminator + " has received role @" + str(role) + " from role giver " + str(event.message_id) + ".")
+        self.logger.log_info(formatting.complete_name(event.member) + " has received role '@" + str(role) + "' from role giver " + str(event.message_id) + ".")
     
 
     @commands.Cog.listener()
@@ -230,17 +177,17 @@ class RoleGivers(commands.Cog):
         if not event.message_id in role_givers.keys():
             return
         
-        role_ids = role_givers[event.message_id].role_ids
+        role_ids = role_givers[event.message_id]
         role = role_ids[int(str(event.emoji.name)[0])-1]
         
         # Give member the role
         guild: Guild = await self.client.fetch_guild(event.guild_id)
-        role: Role = guild.get_role(role_ids[int(str(event.emoji.name)[0])-1])
+        role: Role = guild.get_role(role)
         member = await self.client.get_guild(event.guild_id).fetch_member(event.user_id)
         
         await member.remove_roles(role)
 
-        self.logger.log_info(member.name + "#" + member.discriminator + " has received role @" + str(role) + " from role giver " + str(event.message_id) + ".")
+        self.logger.log_info(formatting.complete_name(member) + " has removed his role '@" + str(role) + "' from role giver " + str(event.message_id) + ".")
 
     
     @commands.Cog.listener()
@@ -258,17 +205,6 @@ class RoleGivers(commands.Cog):
                 self.logger.log_info("Role giver " + str(id) + " message was deleted. Removing role giver.")
                 role_givers.pop(id)
                 dataManager.save_role_givers(role_givers)
-
-
-async def get_bp_message(interaction: Interaction) -> Message:
-        if not interaction.user.id in list(blueprints.keys()):
-            return None
-        
-        try:
-            return await interaction.channel.fetch_message(blueprints[interaction.user.id].message_id)
-        except:
-            blueprints.pop(interaction.user.id)
-            return None
 
 
 def load(client: commands.Bot):

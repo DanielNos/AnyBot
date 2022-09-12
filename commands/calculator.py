@@ -141,7 +141,7 @@ class Calculator(commands.Cog):
         embed.set_thumbnail(url="https://raw.githubusercontent.com/4lt3rnative/nosbot/main/calculator.png")
         embed.add_field(name="⠀", value="```0```")
 
-        await interaction.response.send_message(embed=embed, view=Controls())
+        await interaction.response.send_message(embed=embed, view=Controls(), ephemeral=True)
 
 
 def load(client: commands.Bot):

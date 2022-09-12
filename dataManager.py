@@ -4,7 +4,7 @@ from os.path import exists, isdir
 from os import mkdir, remove, listdir
 from shutil import copyfile
 from importlib import import_module
-from dataClasses import Poll, RoleGiver
+from dataClasses import Poll
 
 
 logger = log.Logger("./logs/log.txt")
@@ -74,7 +74,7 @@ def save_role_givers(roleGivers: dict):
     new_dict = {}
 
     for rg in roleGivers:
-        new_dict[rg] = roleGivers[rg].to_json()
+        new_dict[rg] = roleGivers[rg]
 
     # Save
     save_json("./data/role_givers.json", new_dict)
@@ -109,9 +109,9 @@ def load_role_givers():
 
     for rg in dict:
         role_ids = []
-        for id in dict[rg]["role_ids"]:
+        for id in dict[rg]:
             role_ids.append(int(id))
-        new_dict[int(rg)] = RoleGiver(int(dict[rg]["message_id"]), role_ids)
+        new_dict[int(rg)] = role_ids
     
     if len(new_dict) == 0:
         logger.log_info("No role givers from previous session found.")
