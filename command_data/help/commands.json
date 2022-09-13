@@ -1,6 +1,8 @@
 {
     "Utility": [
         "help",
+        "commands",
+        "nosbot",
         "user_info",
         "joined",
         "clear",

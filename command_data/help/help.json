@@ -1,5 +1,7 @@
 {
     "help": "Shows this list of commands. Use /help [command name] for detailed info about a command.",
+    "commands": "Shows all NosBot commands.",
+    "nosbot": "Shows information about me.",
 
     "role_giver create": "Creates a new role giver.",
 
