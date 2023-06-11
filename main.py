@@ -9,6 +9,16 @@ async def load_cogs(client: commands.Bot, syncCommands: bool):
     logger: logging.Logger = logging.getLogger("bot")
     logger.info("Loading cogs.")
 
+    # Check if files exist
+    for dir in ["./cogs/", "./cogs/core", "./cogs/modules"]:
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+    
+    for name in ["core", "commands_syncer"]:
+        if not os.path.exists("./cogs/core/" + name +".py"):
+            logger.critical(f"Missing \"{name}\" cog in cogs/core directory. Can't start without \"{name}\" cog.")
+            exit(1)
+
     # Load core
     await client.load_extension("cogs.core.core")
     logger.info(f"Loaded cog: core")
