@@ -1,6 +1,8 @@
 import logging
 from logging import Logger
 from discord.ext.commands import Cog, Bot
+from discord import Object
+import config
 
 
 class CommandsSyncer(Cog):
@@ -14,8 +16,14 @@ class CommandsSyncer(Cog):
     async def on_ready(self):
         self.logger.info("Synchronizing commands with Discord.")
         synced = 0
+
         try:
-            synced = len(await self.client.tree.sync())
+            if config.DEBUG["enabled"]:
+                self.client.tree.copy_global_to(guild=Object(id=config.DEBUG["test_guild"]))
+                synced = len(await self.client.tree.sync(guild=Object(id=config.DEBUG["test_guild"])))
+            else:
+                synced = len(await self.client.tree.sync())
+
         except Exception as exception:
             self.logger.critical(f"Failed to synchronize commands: {exception}")
             exit(1)

@@ -1,3 +1,8 @@
+DEBUG = {
+    "enabled": True,
+    "test_guild": 794290505273966604
+}
+
 BOT = {
     "name": "NosBot",
     "icon": "https://cdn.discordapp.com/app-icons/990276313287888896/f4fa1fc1207e7430a510ed6b367da042.png",
