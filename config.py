@@ -1,3 +1,14 @@
+BOT = {
+    "name": "NosBot",
+    "icon": "https://cdn.discordapp.com/app-icons/990276313287888896/f4fa1fc1207e7430a510ed6b367da042.png",
+    "color": 0xFBCE9D
+}
+
+AUTHOR = {
+    "name": "Daniel Nos",
+    "url": "https://github.com/DanielNos"
+}
+
 LOGGING_CONFIG = {
     "version": 1,
     "disabled_existing_loggers": False,
@@ -7,11 +18,11 @@ LOGGING_CONFIG = {
             "datefmt": "%Y-%m-%d %H:%M:%S"
         },
         "standard": {
-            "format": "\033[0;97m%(asctime)s   \033[1;96m%(levelname)-6s \033[93m%(name)-15s\033[0;97m   %(message)s",
+            "format": "\033[0;97m%(asctime)s   \033[1;96m%(levelname)-6s \033[93m%(name)-15s  \033[0;97m %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S"
         },
         "chat": {
-            "format": "\033[0;97m%(asctime)s   \033[1;92mCHAT   \033[93m%(name)-15s\033[0;97m   %(message)s",
+            "format": "\033[0;97m%(asctime)s   \033[1;92mCHAT   \033[93m%(name)-15s   \033[0;97m%(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S"
         }
     },

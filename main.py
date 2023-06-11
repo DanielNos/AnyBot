@@ -1,21 +1,30 @@
-import os, discord, asyncio, logging
+import os, discord, asyncio, logging, sys
 from discord.ext import commands
 from logging.config import dictConfig
 
 import config
 
-
-async def load_cogs(client: commands.Bot):
+async def load_cogs(client: commands.Bot, syncCommands: bool):
+    # Setup logger
     logger: logging.Logger = logging.getLogger("bot")
     logger.info("Loading cogs.")
 
-    for file in os.listdir("./cogs"):
+    # Load core
+    await client.load_extension("cogs.core.core")
+    logger.info(f"Loaded cog: core")
+
+    # Synchronize 
+    if syncCommands:
+        await client.load_extension("cogs.core.commands_syncer")
+        logger.info(f"Loaded cog: commands_syncer")
+
+    # Load modules
+    for file in os.listdir("./cogs/modules"):
         if not file.endswith(".py"):
             continue
 
-        await client.load_extension("cogs." + file[:-3])
+        await client.load_extension("cogs.modules." + file[:-3])
         logger.info(f"Loaded cog: {file[:-3]}")
-
 
 
 if __name__ == "__main__":
@@ -31,8 +40,8 @@ if __name__ == "__main__":
     dictConfig(config.LOGGING_CONFIG)
 
     # Start client
-    client: commands.Bot = commands.Bot(command_prefix="NOPE", intents=discord.Intents.all())
+    client: commands.Bot = commands.Bot(command_prefix="ž", intents=discord.Intents.all())
 
-    asyncio.run(load_cogs(client))
+    asyncio.run(load_cogs(client, "-r" in sys.argv))
 
-    client.run("OTkwMjc2MzEzMjg3ODg4ODk2.GOG5Hv.oSS-XAI76g6In4Qp5R0LSms7zqqpqLRPZ5ojLo", root_logger=True)
+    client.run(token, root_logger=True)
