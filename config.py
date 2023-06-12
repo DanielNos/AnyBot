@@ -5,7 +5,7 @@ DEBUG = {
 
 BOT = {
     "name": "NosBot",
-    "icon": "https://cdn.discordapp.com/app-icons/990276313287888896/f4fa1fc1207e7430a510ed6b367da042.png",
+    "icon": "https://github.com/4lt3rnative/nosbot/blob/main/nosbot.png",
     "color": 0xFBCE9D
 }
 

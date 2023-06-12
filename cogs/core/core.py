@@ -15,7 +15,7 @@ class Core(Cog):
     
     @Cog.listener()
     async def on_ready(self):
-        self.logger.info(f"Logged in as {self.client.user}.")
+        self.logger.info(f"Logged in as {self.client.user} ({self.client.user.id}).")
 
 
     @Cog.listener()

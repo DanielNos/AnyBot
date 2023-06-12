@@ -4,6 +4,7 @@ from logging.config import dictConfig
 
 import config
 
+
 async def load_cogs(client: commands.Bot, syncCommands: bool):
     # Setup logger
     logger: logging.Logger = logging.getLogger("bot")
