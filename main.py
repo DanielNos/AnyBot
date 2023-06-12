@@ -4,6 +4,18 @@ from logging.config import dictConfig
 
 import config
 
+async def load_cogs_from_directory(client: commands.Bot, logger: logging.Logger, directory: str):
+    for dirpath, dirnames, filenames in os.walk(directory):
+        for filename in filenames:
+            if filename.endswith(".py"):
+                cog_name = os.path.splitext(filename)[0]
+                module_path = os.path.join(dirpath, filename)
+                package_path = os.path.relpath(module_path).replace(os.path.sep, '.')[:-3]
+                
+                print(package_path)
+                await client.load_extension(package_path)
+                logger.info(f"Loaded cog {cog_name}.")
+
 
 async def load_cogs(client: commands.Bot, syncCommands: bool):
     # Setup logger
@@ -30,12 +42,7 @@ async def load_cogs(client: commands.Bot, syncCommands: bool):
         logger.info(f"Loaded cog: commands_syncer")
 
     # Load modules
-    for file in os.listdir("./cogs/modules"):
-        if not file.endswith(".py"):
-            continue
-
-        await client.load_extension("cogs.modules." + file[:-3])
-        logger.info(f"Loaded cog: {file[:-3]}")
+    await load_cogs_from_directory(client, logger, "./cogs/modules/")
 
 
 if __name__ == "__main__":
