@@ -7,14 +7,13 @@ import config
 async def load_cogs_from_directory(client: commands.Bot, logger: logging.Logger, directory: str):
     for dirpath, dirnames, filenames in os.walk(directory):
         for filename in filenames:
-            if filename.endswith(".py"):
-                cog_name = os.path.splitext(filename)[0]
+            if filename.endswith(".py") and filename.startswith("M_"):
+                cog_name = os.path.splitext(filename)[0][2:]
                 module_path = os.path.join(dirpath, filename)
                 package_path = os.path.relpath(module_path).replace(os.path.sep, '.')[:-3]
                 
-                print(package_path)
                 await client.load_extension(package_path)
-                logger.info(f"Loaded cog {cog_name}.")
+                logger.info(f"Loaded cog: {cog_name}")
 
 
 async def load_cogs(client: commands.Bot, syncCommands: bool):
