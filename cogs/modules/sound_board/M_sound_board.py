@@ -9,6 +9,7 @@ from discord import Interaction, Embed, Message, Attachment, PartialEmoji, Emoji
 from discord.ui import View
 from cogs.modules.sound_board.sound_board_view import SoundBoardControls
 from sound_board_manager import SoundBoardManager
+from emoji import is_emoji
 
 
 EMBED_COLOR: int = 0xBEF436
@@ -85,6 +86,36 @@ class SoundBoard(Cog):
 
         await interaction.response.send_message(embed=self.create_embed(sound_board), view=self.create_view(sound_board))
         sound_board.messages.append(await interaction.original_response())
+
+    
+    @command(name="upload_sound", description="Allows you to upload new sounds to sound board.")
+    async def upload_sound(self, interaction:Interaction, sound: Attachment, emoji: str = ""):
+        
+        # Check if user is allowed to upload
+        if interaction.user.id != 277796227397976064:
+            await interaction.response.send_message("You don't have rights! 😅")
+            return
+        
+        # No mp3 extension
+        if not sound.filename.endswith(".mp3"):
+            await interaction.response.send_message("❌ Invalid file format. Only .mp3 files are allowed.")
+            return
+        
+        # Invalid emoji
+        if emoji != "" and not is_emoji(emoji):
+            await interaction.response.send_message("❌ Invalid emoji.")
+            return
+        
+        if emoji != "":
+            name = emoji[0] + sound.filename
+            entry_name = emoji[0] + " " + sound.filename[:-4]
+        else:
+            name = "0" + sound.filename
+            entry_name = sound.filename[:-4]
+        
+
+        await sound.save("./modules_data/sound_board/" + name)
+        await interaction.response.send_message(f"✅ Successfully uploaded {sound.filename} as `{entry_name}`.\nIt will be usable after the next bot restart.")
 
 
 async def setup(client):
