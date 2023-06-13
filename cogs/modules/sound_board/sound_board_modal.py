@@ -4,7 +4,7 @@ from discord import Interaction
 
 class VolumeModal(Modal):
     def __init__(self, view):
-        super().__init__(title="Custom Volume")
+        super().__init__(title="Change Volume")
         self.view = view
 
         self.volume: TextInput = TextInput(label="Volume", placeholder=100, default=100, min_length=1, max_length=3)

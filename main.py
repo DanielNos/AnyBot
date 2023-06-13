@@ -22,7 +22,7 @@ async def load_cogs(client: commands.Bot, syncCommands: bool):
     logger.info("Loading cogs.")
 
     # Check if files exist
-    for dir in ["./cogs/", "./cogs/core", "./cogs/modules"]:
+    for dir in ["./cogs/", "./cogs/core", "./cogs/modules", "./modules_data"]:
         if not os.path.exists(dir):
             os.mkdir(dir)
     

@@ -3,10 +3,11 @@ from discord import Embed, ButtonStyle, Interaction, errors
 from discord.ui import View, Button, button
 from math import ceil
 from sound_board_manager import SoundBoardManager
-from sound_board_modals import VolumeModal
+from cogs.modules.sound_board.sound_board_modal import VolumeModal
+from sound_board_button import SoundBoardButton
 
 
-PAGE_SIZE: int = 14 # The amount of buttons on one page. (1 - 19)
+PAGE_SIZE: int = 19 # The amount of buttons on one page. (1 - 19)
 
 
 class SoundBoardControls(View):
@@ -26,7 +27,8 @@ class SoundBoardControls(View):
         self.button_prev_page: Button = self.children[2]
         self.button_page_counter: Button = self.children[3]
         self.button_next_page: Button = self.children[4]
-
+        
+        # Set button states
         if manager.voice_client != None:
             self.button_disconnect.disabled = False
 
@@ -45,8 +47,6 @@ class SoundBoardControls(View):
         if len(self.sounds) < end:
             end = len(self.sounds)
 
-        print(f"From {start} to {end}")
-
         # Remove all buttons
         for button in self.current_buttons:
             self.remove_item(button)
@@ -54,8 +54,9 @@ class SoundBoardControls(View):
 
         # Load new buttons
         for i in range(start, end):
-            self.add_item(self.sounds[i])
-            self.current_buttons.append(self.sounds[i])
+            button: SoundBoardButton = SoundBoardButton(self.manager, self.sounds[i][1], self.sounds[i][0])
+            self.add_item(button)
+            self.current_buttons.append(button)
 
 
     def update_page_buttons(self):

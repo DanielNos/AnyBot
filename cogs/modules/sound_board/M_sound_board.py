@@ -5,9 +5,9 @@ import logging
 from logging import Logger
 from discord.app_commands import command
 from discord.ext.commands import Cog, Bot
-from discord import Interaction, Embed
-from discord.ui import View, Button
-from sound_board_controls import SoundBoardControls
+from discord import Interaction, Embed, Message, Attachment, PartialEmoji, Emoji
+from discord.ui import View
+from cogs.modules.sound_board.sound_board_view import SoundBoardControls
 from sound_board_manager import SoundBoardManager
 
 
@@ -38,11 +38,9 @@ class SoundBoard(Cog):
             name = file.split("/")[-1][:-4]
 
             if name[0] == "0":
-                button: Button = Button(label=name[1:])
+                self.sounds.append((None, name[1:]))
             else:
-                button: Button = Button(label=name[1:], emoji=name[0])
-
-            self.sounds.append(button)
+                self.sounds.append((name[0], name[1:]))
 
         self.logger.info(f"Loaded {len(self.sounds)} sounds to sound board.")
     
