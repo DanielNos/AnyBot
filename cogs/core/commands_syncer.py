@@ -18,9 +18,11 @@ class CommandsSyncer(Cog):
         synced = 0
 
         try:
+            # Synchronize commands with test guild only
             if config.DEBUG["enabled"]:
                 self.client.tree.copy_global_to(guild=Object(id=config.DEBUG["test_guild"]))
                 synced = len(await self.client.tree.sync(guild=Object(id=config.DEBUG["test_guild"])))
+            # Synchronize commands globally
             else:
                 synced = len(await self.client.tree.sync())
 

@@ -31,13 +31,14 @@ class SoundBoardButton(Button):
         source = PCMVolumeTransformer(FFmpegPCMAudio(os.path.abspath(path)), self.manager.volume / 100)
         self.manager.voice_client.play(source, after=lambda e: print(f'Player error: {e}') if e else None)
 
-        # Update playing indicator
+        # Create sound name and path
         name = ""
         if self.emoji != None:
             path += self.emoji.name
         
         name += self.label
-
+        
+        # Change currently playing indicator in all messages
         embed: Embed = self.manager.messages[0].embeds[0]
         embed.set_field_at(index=2, name="Playing:", value=name, inline=False)
 
@@ -51,7 +52,7 @@ class SoundBoardButton(Button):
         while self.manager.voice_client.is_playing():
             await asyncio.sleep(0.1)
 
-        # Change indicator
+        # Change currently playing indicator to "nothing" in all messages
         embed.set_field_at(index=2, name="Playing:", value="nothing", inline=False)
         for i in range(len(self.manager.messages)-1, -1, -1):            
             try:

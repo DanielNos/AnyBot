@@ -171,10 +171,12 @@ class SoundBoardControls(View):
     @button(label="", emoji="➡️", style=ButtonStyle.gray)
     async def next_page(self, interaction: Interaction, button: Button):
         
+        # Move to next page and render it
         if self.page < self.page_count - 1:
             self.page += 1
             self.create_page()
 
+        # Update buttons and page
         self.update_page_buttons()
         await self.update_view()
 

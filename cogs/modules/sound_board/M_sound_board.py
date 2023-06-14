@@ -5,7 +5,7 @@ import logging
 from logging import Logger
 from discord.app_commands import command
 from discord.ext.commands import Cog, Bot
-from discord import Interaction, Embed, Message, Attachment, PartialEmoji, Emoji
+from discord import Interaction, Embed, Attachment
 from discord.ui import View
 from cogs.modules.sound_board.sound_board_view import SoundBoardControls
 from sound_board_manager import SoundBoardManager
@@ -29,9 +29,11 @@ class SoundBoard(Cog):
 
     
     def load_sounds(self):
+        # Create folder
         if not os.path.exists("./modules_data/sound_board/"):
             os.mkdir("./modules_data/sound_board")
 
+        # Load sound names
         for file in os.listdir("./modules_data/sound_board"):
             if not file.endswith(".mp3"):
                 continue
@@ -51,16 +53,20 @@ class SoundBoard(Cog):
 
 
     def create_embed(self, manager: SoundBoardManager) -> Embed:
+        # Create embed
         embed: Embed = Embed(title="Sound Board", color=EMBED_COLOR)
         embed.set_thumbnail(url=EMBED_THUMBNAIL_URL)
 
+        # Current connection field
         if manager.voice_client == None:
             embed.add_field(name="Not connected", value="", inline=False)
         else:
             embed.add_field(name="Connected to", value=manager.voice_client.channel.name, inline=False)
 
+        # Volume field
         embed.add_field(name="Volume:", value=str(manager.volume) + "%")
 
+        # Currently playing field
         if manager.playing == None:
             embed.add_field(name="Playing:", value="nothing", inline=False)
         else:
@@ -93,7 +99,7 @@ class SoundBoard(Cog):
         
         # Check if user is allowed to upload
         if interaction.user.id != 277796227397976064:
-            await interaction.response.send_message("You don't have rights! 😅")
+            await interaction.response.send_message("❌ You don't have rights! 😅")
             return
         
         # No mp3 extension
@@ -106,6 +112,7 @@ class SoundBoard(Cog):
             await interaction.response.send_message("❌ Invalid emoji.")
             return
         
+        # Construct file name and button label
         if emoji != "":
             name = emoji[0] + sound.filename
             entry_name = emoji[0] + " " + sound.filename[:-4]
@@ -113,7 +120,7 @@ class SoundBoard(Cog):
             name = "0" + sound.filename
             entry_name = sound.filename[:-4]
         
-
+        # Save sounds
         await sound.save("./modules_data/sound_board/" + name)
         await interaction.response.send_message(f"✅ Successfully uploaded {sound.filename} as `{entry_name}`.\nIt will be usable after the next bot restart.")
 

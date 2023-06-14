@@ -20,6 +20,7 @@ class Core(Cog):
 
     @Cog.listener()
     async def on_message(self, message: Message):
+        # Log messages from users
         if not message.author.bot:
             self.chat.info(f"[{message.author.name}] {message.content}")
 
