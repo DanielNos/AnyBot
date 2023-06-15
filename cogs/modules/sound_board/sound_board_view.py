@@ -145,6 +145,7 @@ class SoundBoardControls(View):
         if self.manager.voice_client != None:
             await self.manager.voice_client.disconnect()
             self.manager.voice_client = None
+            self.manager.queue.clear()
 
         # Update button
         button.disabled = True

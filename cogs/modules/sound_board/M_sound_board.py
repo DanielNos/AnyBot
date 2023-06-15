@@ -72,6 +72,9 @@ class SoundBoard(Cog):
         else:
             embed.add_field(name="Playing:", value=manager.playing, inline=False)
 
+        # Queue field
+        embed.add_field(name="Queue:", value=manager.queue_str())
+
         return embed
 
 
@@ -98,7 +101,11 @@ class SoundBoard(Cog):
     async def upload_sound(self, interaction:Interaction, sound: Attachment, emoji: str = ""):
         
         # Check if user is allowed to upload
+<<<<<<< Updated upstream
         if interaction.user.id != 277796227397976064:
+=======
+        if interaction.user.id not in [277796227397976064, 533327218403835905]:
+>>>>>>> Stashed changes
             await interaction.response.send_message("❌ You don't have rights! 😅")
             return
         

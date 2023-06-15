@@ -1,8 +1,10 @@
 import os, asyncio
 from discord.ui import Button
 from discord import ButtonStyle, Interaction, PCMVolumeTransformer, FFmpegPCMAudio, Embed, errors
-from discord.ext.commands import Bot
 from sound_board_manager import SoundBoardManager
+
+
+QUEUE_SIZE: NotImplementedError = 3
 
 
 class SoundBoardButton(Button):
@@ -13,9 +15,9 @@ class SoundBoardButton(Button):
     
     async def callback(self, interaction: Interaction):
 
-        # Check if bot is connected to voice and isn't playing
+        # Check if bot is connected to voice
         await interaction.response.defer()
-        if self.manager.voice_client == None or self.manager.voice_client.is_playing():
+        if self.manager.voice_client == None:
             return
 
         # Construct path
@@ -27,10 +29,26 @@ class SoundBoardButton(Button):
 
         path += self.label + ".mp3"
 
+        # Create sound name and path
+        name = ""
+        if self.emoji is not None:
+            name += self.emoji.name
+
+        name += self.label
+
+        # Bot is playing
+        if self.manager.voice_client.is_playing():
+            # Add to queue
+            if len(self.manager.queue) < QUEUE_SIZE:
+                self.manager.queue.insert(0, (name, path))
+            
+            return
+
         # Play sound
         source = PCMVolumeTransformer(FFmpegPCMAudio(os.path.abspath(path)), self.manager.volume / 100)
         self.manager.voice_client.play(source, after=lambda e: print(f'Player error: {e}') if e else None)
 
+<<<<<<< Updated upstream
         # Create sound name and path
         name = ""
         if self.emoji != None:
@@ -38,9 +56,31 @@ class SoundBoardButton(Button):
         
         name += self.label
         
+=======
+        await self.update_indicator(name)
+
+        # Play sounds from queue
+        while len(self.manager.queue) > 0:
+            name, path = self.manager.queue.pop()
+
+            # Play sound
+            source = PCMVolumeTransformer(FFmpegPCMAudio(os.path.abspath(path)), self.manager.volume / 100)
+            
+            # Wait for end
+            while self.manager.voice_client.is_playing():
+                await asyncio.sleep(0.1)
+            
+            self.manager.voice_client.play(source, after=lambda e: print(f'Player error: {e}') if e else None)
+
+            await self.update_indicator(name)
+        
+    
+    async def update_indicator(self, name: str):
+>>>>>>> Stashed changes
         # Change currently playing indicator in all messages
         embed: Embed = self.manager.messages[0].embeds[0]
         embed.set_field_at(index=2, name="Playing:", value=name, inline=False)
+        embed.set_field_at(index=3, name="Queue:", value=self.manager.queue_str(), inline=False)
 
         for i in range(len(self.manager.messages)-1, -1, -1):            
             try:
