@@ -1,9 +1,8 @@
 import logging
 from logging import Logger
-from discord import Interaction, Message
+from discord import Interaction
 from discord.app_commands import command
 from discord.ext.commands import Cog, Bot
-import config
 
 
 class Utilities(Cog):
@@ -18,10 +17,8 @@ class Utilities(Cog):
         if amount < 1 or amount > 100:
             await interaction.response.send_message("❌ Failed. Invalid amount.", ephemeral=True)
             return
-        deleted = []
-        await interaction.response.send_message(f"✅ Removed {len(deleted)} messages.", ephemeral=True)
-        deleted = await interaction.channel.purge(limit=amount, check=lambda message: message.id != interaction.response)
-        await interaction.response.edit_message(content="A")
+        
+        await interaction.channel.purge(limit=amount)
 
 
 async def setup(client):
