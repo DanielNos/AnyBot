@@ -48,15 +48,6 @@ class SoundBoardButton(Button):
         source = PCMVolumeTransformer(FFmpegPCMAudio(os.path.abspath(path)), self.manager.volume / 100)
         self.manager.voice_client.play(source, after=lambda e: print(f'Player error: {e}') if e else None)
 
-<<<<<<< Updated upstream
-        # Create sound name and path
-        name = ""
-        if self.emoji != None:
-            path += self.emoji.name
-        
-        name += self.label
-        
-=======
         await self.update_indicator(name)
 
         # Play sounds from queue
@@ -76,7 +67,6 @@ class SoundBoardButton(Button):
         
     
     async def update_indicator(self, name: str):
->>>>>>> Stashed changes
         # Change currently playing indicator in all messages
         embed: Embed = self.manager.messages[0].embeds[0]
         embed.set_field_at(index=2, name="Playing:", value=name, inline=False)
