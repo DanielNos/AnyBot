@@ -1,8 +1,8 @@
 import logging
 from logging import Logger
-from discord import Interaction
-from discord.app_commands import command
-from discord.ext.commands import Cog, Bot
+from nextcord import Interaction, slash_command
+from nextcord.ext.commands import Cog, Bot
+import config
 
 
 class Utilities(Cog):
@@ -11,15 +11,16 @@ class Utilities(Cog):
         self.logger: Logger = logging.getLogger("bot")
 
 
-    @command(name="clear", description="Removes specified amount of messages. By default 5.")
+    @slash_command(name="clear", description="Removes specified amount of messages. By default 5.", guild_ids=config.DEBUG["test_guilds"])
     async def clear(self, interaction: Interaction, amount: int = 5):
         
         if amount < 1 or amount > 100:
             await interaction.response.send_message("❌ Failed. Invalid amount.", ephemeral=True)
             return
         
-        await interaction.channel.purge(limit=amount)
+        deleted = await interaction.channel.purge(limit=amount)
+        await interaction.response.send_message(f"✅ Successfully removed {len(deleted)} messages.", ephemeral=True)
 
 
-async def setup(client):
-    await client.add_cog(Utilities(client))
+def load(client):
+    client.add_cog(Utilities(client))

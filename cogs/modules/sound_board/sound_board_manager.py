@@ -1,4 +1,5 @@
-from discord import VoiceClient
+from nextcord import VoiceClient
+
 
 class SoundBoardManager:
     def __init__(self, guild_id: int):

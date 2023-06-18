@@ -3,13 +3,13 @@ sys.path.append(os.path.dirname(__file__))
 
 import logging
 from logging import Logger
-from discord.app_commands import command
-from discord.ext.commands import Cog, Bot
-from discord import Interaction, Embed, Attachment
-from discord.ui import View
+from nextcord.ext.commands import Cog, Bot
+from nextcord import Interaction, Embed, Attachment, slash_command
+from nextcord.ui import View
 from cogs.modules.sound_board.sound_board_view import SoundBoardControls
 from sound_board_manager import SoundBoardManager
 from emoji import is_emoji
+import config
 
 
 EMBED_COLOR: int = 0xBEF436
@@ -78,7 +78,7 @@ class SoundBoard(Cog):
         return embed
 
 
-    @command(name="sound_board", description="Opens sound board.")
+    @slash_command(name="sound_board", description="Opens sound board.", guild_ids=config.DEBUG["test_guilds"])
     async def sound_board(self, interaction: Interaction):
         
         # Called outside of guild
@@ -94,10 +94,10 @@ class SoundBoard(Cog):
             self.sound_boards[interaction.guild_id] = sound_board
 
         await interaction.response.send_message(embed=self.create_embed(sound_board), view=self.create_view(sound_board))
-        sound_board.messages.append(await interaction.original_response())
+        sound_board.messages.append(await interaction.original_message())
 
     
-    @command(name="upload_sound", description="Allows you to upload new sounds to sound board.")
+    @slash_command(name="upload_sound", description="Allows you to upload new sounds to sound board.", guild_ids=config.DEBUG["test_guilds"])
     async def upload_sound(self, interaction:Interaction, sound: Attachment, emoji: str = ""):
         
         # Check if user is allowed to upload
@@ -128,5 +128,5 @@ class SoundBoard(Cog):
         await interaction.response.send_message(f"✅ Successfully uploaded {sound.filename} as `{entry_name}`.\nIt will be usable after the next bot restart.")
 
 
-async def setup(client):
-    await client.add_cog(SoundBoard(client))
+def load(client):
+    client.add_cog(SoundBoard(client))

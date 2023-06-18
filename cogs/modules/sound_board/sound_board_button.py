@@ -1,6 +1,7 @@
 import os, asyncio
-from discord.ui import Button
-from discord import ButtonStyle, Interaction, PCMVolumeTransformer, FFmpegPCMAudio, Embed, errors
+from logging import Logger, getLogger
+from nextcord.ui import Button
+from nextcord import ButtonStyle, Interaction, PCMVolumeTransformer, FFmpegPCMAudio, Embed, errors
 from sound_board_manager import SoundBoardManager
 
 
@@ -11,6 +12,8 @@ class SoundBoardButton(Button):
     def __init__(self, manager: SoundBoardManager, label: str, emoji: str | None = None):
         super().__init__(label=label, emoji=emoji, style=ButtonStyle.gray)
         self.manager = manager
+        self.logger: Logger = getLogger("bot")
+
 
     
     async def callback(self, interaction: Interaction):
@@ -46,7 +49,7 @@ class SoundBoardButton(Button):
 
         # Play sound
         source = PCMVolumeTransformer(FFmpegPCMAudio(os.path.abspath(path)), self.manager.volume / 100)
-        self.manager.voice_client.play(source, after=lambda e: print(f'Player error: {e}') if e else None)
+        self.manager.voice_client.play(source, after=lambda e: self.logger.error(f'Player error: {e}') if e else None)
 
         await self.update_indicator(name)
 
@@ -61,7 +64,7 @@ class SoundBoardButton(Button):
             while self.manager.voice_client.is_playing():
                 await asyncio.sleep(0.1)
             
-            self.manager.voice_client.play(source, after=lambda e: print(f'Player error: {e}') if e else None)
+            self.manager.voice_client.play(source, after=lambda e: self.logger.error(f'Player error: {e}') if e else None)
 
             await self.update_indicator(name)
         

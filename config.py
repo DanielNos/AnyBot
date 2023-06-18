@@ -1,6 +1,6 @@
 DEBUG = {
     "enabled": True,
-    "test_guild": 794290505273966604
+    "test_guilds": [794290505273966604]
 }
 
 BOT = {

@@ -1,8 +1,7 @@
 import logging
 from logging import Logger
-from discord.ext.commands import Cog, Bot
-from discord.app_commands import command
-from discord import Message, Interaction, Embed
+from nextcord.ext.commands import Cog, Bot
+from nextcord import Message, Interaction, Embed, slash_command
 import config
 
 
@@ -25,7 +24,7 @@ class Core(Cog):
             self.chat.info(f"[{message.author.name}] {message.content}")
 
 
-    @command(name="info", description=f"Shows information about {config.BOT['name']}.")
+    @slash_command(name="info", description=f"Shows information about {config.BOT['name']}.", guild_ids=config.DEBUG["test_guilds"])
     async def info(self, interaction: Interaction):
 
         embed: Embed = Embed(title=f"{config.BOT['name']}", color=config.BOT["color"])
@@ -39,5 +38,5 @@ class Core(Cog):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-async def setup(client):
-    await client.add_cog(Core(client))
+def load(client):
+    client.add_cog(Core(client))

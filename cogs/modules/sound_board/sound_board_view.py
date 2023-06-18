@@ -1,6 +1,6 @@
 from logging import Logger
-from discord import Embed, ButtonStyle, Interaction, errors
-from discord.ui import View, Button, button
+from nextcord import Embed, ButtonStyle, Interaction, errors
+from nextcord.ui import View, Button, button
 from math import ceil
 from sound_board_manager import SoundBoardManager
 from cogs.modules.sound_board.sound_board_modal import VolumeModal
@@ -67,7 +67,7 @@ class SoundBoardControls(View):
     
     async def update_view(self):
         # Update messages
-        for i in range(len(self.manager.messages)-1, -1, -1):            
+        for i in range(len(self.manager.messages)-1, -1, -1):
             try:
                 await self.manager.messages[i].edit(view=self)
             except errors.NotFound:
@@ -76,7 +76,7 @@ class SoundBoardControls(View):
     
     async def update_embed(self, embed: Embed):
         # Update messages
-        for i in range(len(self.manager.messages)-1, -1, -1):            
+        for i in range(len(self.manager.messages)-1, -1, -1):         
             try:
                 await self.manager.messages[i].edit(embed=embed)
             except errors.NotFound:
@@ -112,17 +112,17 @@ class SoundBoardControls(View):
 
 
     @button(label="Connect", style=ButtonStyle.green)
-    async def connect(self, interaction: Interaction, button: Button):
-        
+    async def connect(self, button: Button, interaction: Interaction):
+
         # User is not connected to a voice channel
-        if interaction.user.voice == None:
+        if interaction.user.voice is None:
             await interaction.response.send_message("You have to be connected to a voice channel.", ephemeral=True)
             return
     
         # Connect to channel
-        if self.manager.voice_client == None:
+        if self.manager.voice_client is None:
             self.logger.info(f"Connecting to \"{interaction.user.voice.channel.name}\" voice channel at {interaction.user.guild.name}.")
-            self.manager.voice_client = await interaction.user.voice.channel.connect(self_deaf=True)
+            self.manager.voice_client = await interaction.user.voice.channel.connect()
         # Change channel
         elif self.manager.voice_client.channel != interaction.user.voice.channel:
             self.logger.info(f"Moving from \"{self.manager.voice_client.channel.name}\" to \"{interaction.user.voice.channel.name}\" voice channel at {interaction.user.guild.name}.")
@@ -139,10 +139,10 @@ class SoundBoardControls(View):
     
 
     @button(label="Disconnect", style=ButtonStyle.red, disabled=True)
-    async def disconnect(self, interaction: Interaction, button: Button):
+    async def disconnect(self, button: Button, interaction: Interaction):
         
         # Disconnect
-        if self.manager.voice_client != None:
+        if self.manager.voice_client is not None:
             await self.manager.voice_client.disconnect()
             self.manager.voice_client = None
             self.manager.queue.clear()
@@ -158,13 +158,24 @@ class SoundBoardControls(View):
 
     
     @button(label="", emoji="⬅️", style=ButtonStyle.gray, disabled=True)
-    async def prev_page(self, interaction: Interaction, button: Button):
+    async def prev_page(self, button: Button, interaction: Interaction):
+
+        # Move to previous page and render it
+        if self.page > 0:
+            self.page -= 1
+            self.create_page()
+
+        # Update buttons and page
+        self.update_page_buttons()
+        await self.update_view()
+
+        await interaction.response.defer()
         
         await interaction.response.defer()
 
     
     @button(label="1/1", style=ButtonStyle.gray)
-    async def current_page(self, interaction: Interaction, button: Button):
+    async def current_page(self, button: Button, interaction: Interaction):
         
         await interaction.response.defer()
 
@@ -185,6 +196,6 @@ class SoundBoardControls(View):
 
 
     @button(label="", emoji="🔊", style=ButtonStyle.blurple)
-    async def custom_volume(self, interaction: Interaction, button: Button):
+    async def custom_volume(self, button: Button, interaction: Interaction):
         
         await interaction.response.send_modal(VolumeModal(self))
