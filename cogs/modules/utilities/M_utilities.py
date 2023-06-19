@@ -1,6 +1,6 @@
 import logging
 from logging import Logger
-from nextcord import Interaction, slash_command
+from nextcord import Interaction, User, Embed, slash_command
 from nextcord.ext.commands import Cog, Bot
 import config
 
@@ -20,6 +20,19 @@ class Utilities(Cog):
         
         deleted = await interaction.channel.purge(limit=amount)
         await interaction.response.send_message(f"✅ Successfully removed {len(deleted)} messages.", ephemeral=True)
+
+    
+    @slash_command(name="avatar", description="Shows user's profile image.")
+    async def avatar(self, interaction: Interaction, user: User = None):
+
+        if user is None:
+            user = interaction.user
+
+        embed: Embed = Embed(title=f"{user.name}'s profile image", color=user.color)
+        embed.set_image(user.avatar.url)
+        embed.add_field(name="",value=f"[Download]({user.avatar.url})")
+
+        await interaction.response.send_message(embed=embed)
 
 
 def load(client):

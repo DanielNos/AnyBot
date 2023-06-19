@@ -1,4 +1,4 @@
-import os, nextcord, logging, sys, asyncio
+import os, nextcord, logging, asyncio
 from importlib import import_module
 from nextcord.ext.commands import Bot
 from logging.config import dictConfig
