@@ -5,7 +5,7 @@ DEBUG = {
 
 BOT = {
     "name": "NosBot",
-    "icon": "https://github.com/4lt3rnative/nosbot/blob/main/nosbot.png",
+    "icon": "https://raw.githubusercontent.com/4lt3rnative/nosbot/main/nosbot.png",
     "color": 0xFBCE9D
 }
 

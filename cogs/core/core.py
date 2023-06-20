@@ -24,13 +24,13 @@ class Core(Cog):
             self.chat.info(f"[{message.author.name}] {message.content}")
 
 
-    @slash_command(name="info", description=f"Shows information about {config.BOT['name']}.", guild_ids=config.DEBUG["test_guilds"])
-    async def info(self, interaction: Interaction):
+    @slash_command(name="nosbot", description=f"Shows information about {config.BOT['name']}.", guild_ids=config.DEBUG["test_guilds"])
+    async def nosbot(self, interaction: Interaction):
 
         embed: Embed = Embed(title=f"{config.BOT['name']}", color=config.BOT["color"])
         embed.set_thumbnail(url=config.BOT["icon"])
         
-        embed.add_field(name="Commands", value=len(self.client.all_commands))
+        embed.add_field(name="Commands", value=len(self.client.commands))
         embed.add_field(name="Guilds", value=len(self.client.guilds))
         embed.add_field(name="Latency", value=f"{round(self.client.latency * 1000)} ms")
         embed.add_field(name="Author", value=f"[{config.AUTHOR['name']}]({config.AUTHOR['url']})", inline=False)
