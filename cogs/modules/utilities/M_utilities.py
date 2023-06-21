@@ -32,7 +32,7 @@ class Utilities(Cog):
         await interaction.response.send_message(f"✅ Successfully removed {len(deleted)} messages.", ephemeral=True)
 
     
-    @slash_command(name="avatar", description="Shows user's profile image.")
+    @slash_command(name="avatar", description="Shows user's profile image.", guild_ids=config.DEBUG["test_guilds"])
     async def avatar(self, interaction: Interaction, user: Member = None):
 
         # No target
@@ -47,7 +47,7 @@ class Utilities(Cog):
         await interaction.response.send_message(embed=embed)
 
     
-    @slash_command(name="info", description="Shows information about user.")
+    @slash_command(name="info", description="Shows information about user.", guild_ids=config.DEBUG["test_guilds"])
     async def info(self, interaction: Interaction, user: Member = None):
         
         # No target

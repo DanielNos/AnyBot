@@ -1,7 +1,7 @@
 import logging
 from logging import Logger
-from discord.ext.commands import Cog, Bot
-from nextcord import slash_command
+from nextcord.ext.commands import Cog, Bot
+from nextcord import Interaction, slash_command
 import config
 
 
@@ -11,5 +11,5 @@ class NAME(Cog):
         self.logger: Logger = logging.getLogger("bot")
 
 
-async def setup(client):
-    await client.add_cog(NAME(client))
+def load(client):
+    client.add_cog(NAME(client))

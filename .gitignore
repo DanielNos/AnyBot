@@ -2,3 +2,4 @@ logs
 *.log
 __pycache__
 *.mp3
+modules_data
