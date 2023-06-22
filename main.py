@@ -2,8 +2,8 @@ import os, nextcord, logging, asyncio
 from importlib import import_module
 from nextcord.ext.commands import Bot
 from logging.config import dictConfig
-
 import config
+
 
 async def load_cogs_from_directory(client: Bot, logger: logging.Logger, directory: str):
 
