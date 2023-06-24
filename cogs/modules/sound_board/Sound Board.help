@@ -1,0 +1,4 @@
+sound_board
+Opens sound board.
+upload_sound [sound] (emoji)
+Uploads a sound to sound board.

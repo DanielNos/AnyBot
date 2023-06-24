@@ -32,7 +32,7 @@ async def load_cogs(client: Bot):
         if not os.path.exists(dir):
             os.mkdir(dir)
     
-    for name in ["core"]:
+    for name in ["core", "help"]:
         if not os.path.exists("./cogs/core/" + name +".py"):
             logger.critical(f"Missing \"{name}\" cog in cogs/core directory. Can't start without \"{name}\" cog.")
             exit(1)
@@ -41,6 +41,11 @@ async def load_cogs(client: Bot):
     import cogs.core.core
     cogs.core.core.load(client)
     logger.info(f"Loaded cog: core")
+
+    # Load help
+    import cogs.core.help
+    cogs.core.help.load(client)
+    logger.info(f"Loaded cog: help")
 
     # Load modules
     await load_cogs_from_directory(client, logger, "./cogs/modules/")

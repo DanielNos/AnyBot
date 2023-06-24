@@ -1,0 +1,6 @@
+welcome_message set [message]
+Sets server welcome message.
+welcome_message enabled [True/False]
+Enables/Disables the welcome message.
+welcome_message status
+Shows information about server welcome message.

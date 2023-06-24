@@ -97,7 +97,7 @@ class SoundBoard(Cog):
         sound_board.messages.append(await interaction.original_message())
 
     
-    @slash_command(name="upload_sound", description="Allows you to upload new sounds to sound board.", guild_ids=config.DEBUG["test_guilds"])
+    @slash_command(name="upload_sound", description="Uploads a sound to sound board.", guild_ids=config.DEBUG["test_guilds"])
     async def upload_sound(self, interaction:Interaction, sound: Attachment, emoji: str = ""):
         
         # Check if user is allowed to upload
