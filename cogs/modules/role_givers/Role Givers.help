@@ -1,0 +1,3 @@
+role_giver create
+Creates a new role giver blueprint.
+role_giver add_role [role] (emoji) (text)
