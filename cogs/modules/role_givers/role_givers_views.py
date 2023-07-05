@@ -1,84 +1,72 @@
-from logging import Logger
+from logging import Logger, getLogger
+from typing import Dict
 from nextcord.ui import View, Button, button
-from nextcord import ButtonStyle, Interaction
-from role_givers_modals import AddRoleModal
-from emoji import is_emoji
-
-
-NUMBERS = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣"]
+from nextcord import ButtonStyle, Interaction, Message
+from role_giver import RoleGiverBlueprint, RoleGiver
+from role_givers_modals import RemoveRoleModal
 
 
 class RoleGiverDelete(View):
-    def __init__(self):
+    def __init__(self, blueprints: Dict[int, RoleGiverBlueprint], user_id: int):
         super().__init__(timeout=None)
+        self.blueprints: Dict[int, RoleGiverBlueprint] = blueprints
+        self.user_id = user_id
 
     
     @button(label="Yes, delete it", style=ButtonStyle.red)
     async def delete(self, button: Button, interaction: Interaction):
-        pass
+        # Remove blueprint message if it exists
+        try:
+            message = await self.blueprints[self.user_id].message.channel.fetch_message(self.blueprints[self.user_id].message.id)
+            await message.delete()
+        except:
+            pass
+
+        await interaction.message.delete()
 
 
     @button(label="No, keep it", style=ButtonStyle.green)
     async def keep(self, button: Button, interaction: Interaction):
-        pass
+        await interaction.message.delete()
 
 
-class RoleGiverView(View):
-    def __init__(self, logger: Logger, cog):
+class FullBlueprintView(View):
+    def __init__(self, blueprint: RoleGiverBlueprint, role_givers: Dict[int, RoleGiver]):
         super().__init__(timeout=None)
-        self.logger = logger
-
-        self.button_add_role: Button = self.children[0]
-        self.button_remove_role: Button = self.children[1]
-        self.button_complete: Button = self.children[2]
-
-        self.roles = []
+        self.logger: Logger = getLogger("bot")
+        self.blueprint: RoleGiverBlueprint = blueprint
+        self.role_givers: Dict[int, RoleGiver] = role_givers
 
     
-    @button(label="Use /role_giver add_role")
+    @button(label="Use /role_giver add_role [role] (text) (emoji)")
     async def add_role(self, button: Button, interaction: Interaction):
-
-        modal = AddRoleModal()
-        await interaction.response.send_modal(modal)
-        await modal.wait()
-
-        text = modal.input.value
-
-        # Collect emoji
-        emoji = NUMBERS[len(self.roles)]
-        if is_emoji(text[0]):
-            emoji = text[0]
-            text = text[1:]
-
-        # Check for duplicate emoji
-        for role in self.roles:
-            if role[1] == emoji:
-                return
-        
-        text = text.strip()
-        
-        # Save role
-        self.roles.append((text, emoji))
-
-        # Update GUI
-        if len(self.roles) == 9:
-            self.button_add_role.disabled = True
-        
-        self.button_complete.disabled = False
-
-        await interaction.edit_original_message(content=f"{interaction.message.content}\n{emoji} {text}", view=self)
+        await interaction.response.defer()
 
     
     @button(label="Remove Role", style=ButtonStyle.blurple)
     async def remove_role(self, button: Button, interaction: Interaction):
 
-        await interaction.response.send_modal()
+        await interaction.response.send_modal(RemoveRoleModal(self.blueprint))
 
     
-    @button(label="Complete", style=ButtonStyle.green, disabled=True)
+    @button(label="Complete", style=ButtonStyle.green)
     async def complete(self, button: Button, interaction: Interaction):
+        
+        # Delete original message
+        await interaction.message.delete()
 
-        await interaction.response.send_modal()
+        # Create emoji to role dictionary
+        roles = {}
+        for role in self.blueprint.roles:
+            roles[role[2]] = role[0]
+
+        # Create new message and role giver
+        message: Message = await interaction.channel.send(interaction.message.content)
+        self.role_givers[message.id] = RoleGiver(roles)
+        
+        # Add reactions to message
+        for role in self.blueprint.roles:
+            await message.add_reaction(role[2])
     
 
     @button(label="Cancel", style=ButtonStyle.red)
