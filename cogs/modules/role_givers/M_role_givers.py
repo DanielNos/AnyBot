@@ -3,10 +3,9 @@ sys.path.append(os.path.dirname(__file__))
 
 import logging
 from logging import Logger
-from typing import Dict
+from typing import Dict, List
 from nextcord.ext.commands import Cog, Bot
-from nextcord.guild import GuildChannel
-from nextcord import Interaction, PartialInteractionMessage, Role, Member, RawReactionActionEvent, Reaction, Message, slash_command
+from nextcord import Interaction, PartialInteractionMessage, Role, RawReactionActionEvent, Guild, TextChannel, Message, slash_command
 from role_givers_views import FullBlueprintView, RoleGiverDelete
 from role_givers_limited_view import LimitedBlueprintView
 from role_giver import RoleGiver, RoleGiverBlueprint
@@ -28,6 +27,65 @@ class RoleGivers(Cog):
 
     def add_role_giver(self, message_id: int, role_giver):
         self.role_givers[message_id] = role_giver
+
+    
+    @Cog.listener()
+    async def on_ready(self):
+
+        # LOAD ROLE GIVERS
+        return
+        # Check if folder exists
+        if not os.path.exists("./modules_data/role_givers/"):
+            os.mkdir("./modules_data/role_givers/")
+        
+        # Check if file exists
+        if not os.path.exists("./modules_data/role_givers/role_givers"):
+            file = open("./modules_data/role_givers/role_givers", "w")
+            file.write("{}")
+            file.close()
+            return
+        
+        # Read lines
+        file = open("./modules_data/role_givers/role_givers", "r")
+        lines = file.readlines()
+        file.close()
+
+        to_remove = []
+
+        # Process lines
+        index = 0
+        for line in lines:
+            # Split line to parts
+            parts = line[:-1].split(";")
+
+            # Collect role giver info
+            guild_id, channel_id, message_id = parts[0].split(":")
+
+            del parts[0]
+
+            # Fetch guild
+            try:
+                guild: Guild = await self.client.fetch_guild(int(guild_id), with_counts=False)
+            except:
+                self.logger.error(f"Role givers module failed to fetch guild with id: {guild_id}")
+                continue
+
+            # Bot was removed from guild
+            if guild not in self.client.guilds:
+                to_remove.append(index)
+                continue
+            
+            # Fetch channel
+            try:
+                channel: TextChannel = await guild.fetch_channel(int(channel_id))
+            except:
+                continue
+
+            # Collect roles
+            
+
+            index += 1
+                
 
 
     @slash_command(name="role_giver", guild_ids=config.DEBUG["test_guilds"])
@@ -51,11 +109,11 @@ class RoleGivers(Cog):
                 self.role_giver_blueprints.pop(interaction.user.id)
         
         if text is None:
-            text = "Click on a number to receive a role!"
+            text = "Click on a emoji to receive a role!"
 
         # Create blueprint and message
         blueprint = RoleGiverBlueprint()
-        message: PartialInteractionMessage = await interaction.response.send_message(text, view=LimitedBlueprintView())
+        message: PartialInteractionMessage = await interaction.response.send_message(text, view=LimitedBlueprintView(interaction.user.id))
 
         # Save message to blueprint and add it do dict
         blueprint.message = await message.fetch()
@@ -76,6 +134,29 @@ class RoleGivers(Cog):
         if len(blueprint.roles) >= 10:
             await interaction.response.send_message("❌ Can't add more than 10 roles to one role giver.", ephemeral=True)
             return
+        
+        # Collect bots roles
+        for bot in interaction.guild.bots:
+            if bot.id == self.client.user.id:
+                bot_roles: List[Role] = bot.roles
+                break
+        
+        # Check if he can assign this role
+        if role.is_bot_managed():
+            await interaction.response.send_message("❌ This role is bot managed. It can't be assigned to users.", ephemeral=True)
+            return
+
+        # Check bot has permission to assign this role
+        lower = False
+        for r in bot_roles:
+            if role < r:
+                lower = True
+                break
+                
+        # It can't assign it
+        if not lower:
+            await interaction.response.send_message(f"❌ This role is above or equal to the highest {config.BOT['name']}s role. {config.BOT['name']} can assign only roles lower than his.", ephemeral=True)
+            return
 
         # Emoji is provided
         if emoji is not None:
@@ -85,8 +166,8 @@ class RoleGivers(Cog):
                 return
             
             # Duplicate emoji
-            for role in blueprint.roles:
-                if role[2] == emoji:
+            for r in blueprint.roles:
+                if r[2] == emoji:
                     await interaction.response.send_message("❌ Emoji is already used.", ephemeral=True)
                     return
                 
@@ -100,49 +181,60 @@ class RoleGivers(Cog):
         blueprint.add_role(role, text, emoji)
 
         # Create new view
-        role_giver_view = FullBlueprintView(blueprint, self.role_givers)
+        role_giver_view = FullBlueprintView(blueprint, self.role_givers, interaction.user.id)
 
         # Update messsage
-        await blueprint.message.edit(content=f"{blueprint.message.content}\n{emoji} {role.mention} {'' if text is None else text}", view=role_giver_view)
-        await interaction.followup.send(f"✅ Added role {role}.", delete_after=3)
+        new_content = f"{blueprint.message.content}\n{emoji} {role.mention} {'' if text is None else text}"
+        blueprint.message.content = new_content
 
-    
-    @Cog.listener()
-    async def on_reaction_add(self, reaction: Reaction, user: Member):
-        print(type(user))
-        # Message isn't role giver 
-        if reaction.message.id not in self.role_givers or user.bot:
-            return
-        
-        role_giver = self.role_givers[reaction.message.id]
-        
-        # Emoji isn't valid reaction
-        if reaction.emoji not in role_giver.roles:
-            await reaction.remove(user)
-            return
-        
-        await user.add_roles(role_giver.roles[reaction.emoji])
+        # Edit message
+        await blueprint.message.edit(content=new_content, view=role_giver_view)
+        await interaction.followup.send(f"✅ Added role {role}.", delete_after=3)
 
 
     @Cog.listener()
     async def on_raw_reaction_add(self, payload: RawReactionActionEvent):
         
-        # Message isn't role giver 
+        # Reaction is by bot
+        if payload.user_id == self.client.user.id:
+            return
+
+        # Message isn't a role giver
         if payload.message_id not in self.role_givers:
             return
         
         role_giver = self.role_givers[payload.message_id]
         
         # Collect message
-        channel: GuildChannel = await self.client.fetch_channel(payload.channel_id)
-        message: Message = channel.fetch_message(payload.message_id)
+        channel = await self.client.fetch_channel(payload.channel_id)
+        message: Message = await channel.fetch_message(payload.message_id)
 
         # Emoji isn't valid reaction
-        if payload.emoji not in role_giver.roles:
-            await message.remove_reaction(user)
+        if payload.emoji.name not in role_giver.roles:
+            await message.remove_reaction(payload.emoji, payload.member)
             return
         
-        await user.add_roles(role_giver.roles[reaction.emoji])
+        await payload.member.add_roles(role_giver.roles[payload.emoji.name])
+
+
+    @Cog.listener()
+    async def on_raw_reaction_remove(self, payload: RawReactionActionEvent):
+        
+        # Reaction is by bot
+        if payload.user_id == self.client.user.id:
+            return
+
+        # Message isn't a role giver
+        if payload.message_id not in self.role_givers:
+            return
+        
+        role_giver = self.role_givers[payload.message_id]
+
+        # Emoji isn't valid reaction
+        if payload.emoji.name not in role_giver.roles:
+            return
+        
+        await payload.member.remove_roles(role_giver.roles[payload.emoji.name])
 
 
 def load(client):

@@ -4,9 +4,10 @@ from nextcord import ButtonStyle, Interaction
 
 
 class LimitedBlueprintView(View):
-    def __init__(self):
+    def __init__(self, editor_id: int):
         super().__init__(timeout=None)
         self.logger: Logger = getLogger("bot")
+        self.editor_id = editor_id
 
     
     @button(label="Use /role_giver add_role [role] (text) (emoji)")
@@ -28,5 +29,10 @@ class LimitedBlueprintView(View):
 
     @button(label="Cancel", style=ButtonStyle.red)
     async def cancel(self, button: Button, interaction: Interaction):
+
+        # Allow only creator to edit
+        if interaction.user.id != self.editor_id:
+            await interaction.response.defer()
+            return
 
         await interaction.message.delete()

@@ -3,9 +3,10 @@ from typing import Dict
 
 
 class RoleGiver:
-    def __init__(self, roles: Dict[str, Role]):
+    def __init__(self, roles: Dict[str, Role], channel_id: int):
         self.roles = roles
-    
+        self.channel_id = channel_id
+
 
 class RoleGiverBlueprint:
     def __init__(self):
