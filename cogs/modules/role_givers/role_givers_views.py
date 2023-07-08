@@ -93,20 +93,21 @@ class FullBlueprintView(View):
         with open("./modules_data/role_givers/role_givers", "r") as file:
             json_obj = json.load(file)
         
-        # Write data
+        # Flatten roles
         json_roles = {}
         for role in roles:
             json_roles[role] = roles[role].id
 
-        if interaction.guild_id in json_obj:
-            if interaction.channel_id in json_obj[interaction.guild]:
-                json_obj[interaction.guild_id][interaction.channel_id][message.id] = json_roles
+        # Insert data
+        if str(interaction.guild_id) in json_obj:
+            if str(interaction.channel_id) in json_obj[str(interaction.guild_id)]:
+                json_obj[str(interaction.guild_id)][str(interaction.channel_id)][str(message.id)] = json_roles
             else:
-                json_obj[interaction.guild_id][interaction.channel_id] = {message.id: json_roles}
+                json_obj[str(interaction.guild_id)][str(interaction.channel_id)] = {message.id: json_roles}
         else:
             json_obj[interaction.guild_id] = {interaction.channel_id: {message.id: json_roles}}
 
-        #json_obj = { interaction.guild_id : { interaction.channel_id : { message.id : json_roles } } }
+        # Save data
         with open("./modules_data/role_givers/role_givers", "w") as file:
             file.write(json.dumps(json_obj, indent=4))
         

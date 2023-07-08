@@ -1,11 +1,12 @@
 import os, sys
 sys.path.append(os.path.dirname(__file__))
 
-import logging
+import logging, json
 from logging import Logger
 from typing import Dict, List
 from nextcord.ext.commands import Cog, Bot
 from nextcord import Interaction, PartialInteractionMessage, Role, RawReactionActionEvent, Guild, TextChannel, Message, slash_command
+from nextcord import HTTPException, Forbidden, NotFound
 from role_givers_views import FullBlueprintView, RoleGiverDelete
 from role_givers_limited_view import LimitedBlueprintView
 from role_giver import RoleGiver, RoleGiverBlueprint
@@ -33,7 +34,6 @@ class RoleGivers(Cog):
     async def on_ready(self):
 
         # LOAD ROLE GIVERS
-        return
         # Check if folder exists
         if not os.path.exists("./modules_data/role_givers/"):
             os.mkdir("./modules_data/role_givers/")
@@ -45,48 +45,84 @@ class RoleGivers(Cog):
             file.close()
             return
         
-        # Read lines
-        file = open("./modules_data/role_givers/role_givers", "r")
-        lines = file.readlines()
-        file.close()
+        # Read JSON
+        with open("./modules_data/role_givers/role_givers", "r") as file:
+            json_obj = json.load(file)
 
-        to_remove = []
+        bots_guilds = [guild.id for guild in self.client.guilds]
+        loaded_role_givers = 0
 
-        # Process lines
-        index = 0
-        for line in lines:
-            # Split line to parts
-            parts = line[:-1].split(";")
+        guilds_to_remove = []
+        channels_to_remvoe = []
+        messages_to_remove = []
 
-            # Collect role giver info
-            guild_id, channel_id, message_id = parts[0].split(":")
+        for guild_id in json_obj: # GUILDS
+            INT_guild_id = int(guild_id)
 
-            del parts[0]
-
-            # Fetch guild
-            try:
-                guild: Guild = await self.client.fetch_guild(int(guild_id), with_counts=False)
-            except:
-                self.logger.error(f"Role givers module failed to fetch guild with id: {guild_id}")
+            # Remove role givers from servers where bot was removed
+            if guild_id not in bots_guilds:
+                guilds_to_remove.append(guild_id)
                 continue
 
-            # Bot was removed from guild
-            if guild not in self.client.guilds:
-                to_remove.append(index)
+            # Try to fetch guild
+            try:
+                guild: Guild = await self.client.fetch_guild(INT_guild_id)
+            except e:
+                self.logger.error(f"Role givers module failed to fetch server {guild_id}. Error: {e.text}")
                 continue
             
-            # Fetch channel
-            try:
-                channel: TextChannel = await guild.fetch_channel(int(channel_id))
-            except:
-                continue
+            self.role_givers[INT_guild_id] = {}
 
-            # Collect roles
-            
+            for channel_id in json_obj[guild_id]: # CHANNELS
+                INT_channel_id = int(channel_id)
 
-            index += 1
+                # Try to fetch channel
+                try:
+                    channel: TextChannel = await guild.fetch_channel(INT_channel_id)
+                except HTTPException as e:
+                    self.logger.error(f"Role givers module failed to fetch channel {channel_id} from server {guild.name}. Error: {e.text}")
+                    continue
+                except:
+                    channels_to_remvoe.append((guild_id, channel_id))
+                    continue
+
+                self.role_givers[INT_guild_id][INT_channel_id] = {}
+
+                for message_id in json_obj[guild_id][channel_id]: # MESSAGES
+                    INT_message_id = int(message_id)
+
+                    # Try to fetch message
+                    try:
+                        message: Message = await channel.fetch_message(INT_message_id)
+                    except HTTPException as e:
+                        self.logger.error(f"Role givers module failed to fetch message {message_id} from {guild.name}/{channel.name}. Error: {e.text}")
+                        continue
+                    except:
+                        messages_to_remove.append((guild_id, channel_id, message_id))
+                        continue
+
+                    self.role_givers[INT_guild_id][INT_channel_id][INT_message_id] = message
+                    loaded_role_givers += 1
+        
+        self.logger.info(f"Loaded {loaded_role_givers} role givers.")
+        self.logger.info(f"Discarted {len(guilds_to_remove)}/{len(channels_to_remvoe)}/{len(messages_to_remove)} role giver entities.")
+
+        # Discard guilds
+        for guild in guilds_to_remove:
+            del json_obj[guild]
+
+        # Discard channels
+        for channel in channels_to_remvoe:
+            del json_obj[channel[0]][channel[1]]
+        
+        # Discard messages
+        for message in messages_to_remove:
+            del json_obj[message[0]][message[1]][message[2]]
+
+        # Save role givers
+        with open("./modules_data/role_givers/role_givers", "w") as file:
+            file.write(json.dumps(json_obj, indent=4))
                 
-
 
     @slash_command(name="role_giver", guild_ids=config.DEBUG["test_guilds"])
     async def role_giver(self, interaction: Interaction):
@@ -200,10 +236,10 @@ class RoleGivers(Cog):
             return
 
         # Message isn't a role giver
-        if payload.message_id not in self.role_givers:
+        if payload.guild_id not in self.role_givers or payload.channel_id not in self.role_givers[payload.guild_id] or payload.message_id not in self.role_givers[payload.guild_id][payload.channel_id]:
             return
         
-        role_giver = self.role_givers[payload.message_id]
+        role_giver = self.role_givers[payload.guild_id][payload.channel_id][payload.message_id]
         
         # Collect message
         channel = await self.client.fetch_channel(payload.channel_id)

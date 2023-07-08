@@ -1,6 +1,5 @@
 DEBUG = {
-    "enabled": True,
-    "test_guilds": [794290505273966604]
+    "test_guilds": [794290505273966604] # To disable debug, leave this empty
 }
 
 BOT = {
