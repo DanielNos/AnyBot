@@ -3,7 +3,7 @@ sys.path.append(os.path.dirname(__file__))
 
 import logging, json
 from logging import Logger
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from nextcord.ext.commands import Cog, Bot
 from nextcord import Interaction, PartialInteractionMessage, Role, RawReactionActionEvent, Guild, TextChannel, Message, slash_command
 from nextcord import HTTPException, Forbidden, NotFound
@@ -15,6 +15,21 @@ import config
 
 
 NUMBERS = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣", "🔟"]
+
+
+def remove_entities(json_obj: Dict[str, Dict[str, Dict[str, Dict[str, int]]]], guilds_to_remove: List[str], channels_to_remove: List[Tuple[str, str]], messages_to_remove: List[Tuple[str, str, str]]):
+
+    # Discard messages
+    for message in messages_to_remove:
+        del json_obj[message[0]][message[1]][message[2]]
+    
+    # Discard channels
+    for channel in channels_to_remove:
+        del json_obj[channel[0]][channel[1]]    
+
+    # Discard guilds
+    for guild in guilds_to_remove:
+        del json_obj[guild]
 
 
 class RoleGivers(Cog):
@@ -53,14 +68,14 @@ class RoleGivers(Cog):
         loaded_role_givers = 0
 
         guilds_to_remove = []
-        channels_to_remvoe = []
+        channels_to_remove = []
         messages_to_remove = []
 
         for guild_id in json_obj: # GUILDS
             INT_guild_id = int(guild_id)
 
             # Remove role givers from servers where bot was removed
-            if guild_id not in bots_guilds:
+            if INT_guild_id not in bots_guilds:
                 guilds_to_remove.append(guild_id)
                 continue
 
@@ -83,7 +98,7 @@ class RoleGivers(Cog):
                     self.logger.error(f"Role givers module failed to fetch channel {channel_id} from server {guild.name}. Error: {e.text}")
                     continue
                 except:
-                    channels_to_remvoe.append((guild_id, channel_id))
+                    channels_to_remove.append((guild_id, channel_id))
                     continue
 
                 self.role_givers[INT_guild_id][INT_channel_id] = {}
@@ -94,9 +109,6 @@ class RoleGivers(Cog):
                     # Try to fetch message
                     try:
                         message: Message = await channel.fetch_message(INT_message_id)
-                    except HTTPException as e:
-                        self.logger.error(f"Role givers module failed to fetch message {message_id} from {guild.name}/{channel.name}. Error: {e.text}")
-                        continue
                     except:
                         messages_to_remove.append((guild_id, channel_id, message_id))
                         continue
@@ -105,19 +117,27 @@ class RoleGivers(Cog):
                     loaded_role_givers += 1
         
         self.logger.info(f"Loaded {loaded_role_givers} role givers.")
-        self.logger.info(f"Discarted {len(guilds_to_remove)}/{len(channels_to_remvoe)}/{len(messages_to_remove)} role giver entities.")
+        self.logger.info(f"Discarted {len(guilds_to_remove)}/{len(channels_to_remove)}/{len(messages_to_remove)} role giver entities.")
 
-        # Discard guilds
-        for guild in guilds_to_remove:
-            del json_obj[guild]
+        # Remove invalid guilds, channels and messages
+        remove_entities(json_obj, guilds_to_remove, channels_to_remove, messages_to_remove)
 
-        # Discard channels
-        for channel in channels_to_remvoe:
-            del json_obj[channel[0]][channel[1]]
-        
-        # Discard messages
-        for message in messages_to_remove:
-            del json_obj[message[0]][message[1]][message[2]]
+        # Remove channels and guilds with no role givers
+        guilds_to_remove, channels_to_remove = [], []
+
+        for guild_id in json_obj: # GUILDS
+            guild_has_role_givers = False
+
+            for channel_id in json_obj[guild_id]: # CHANNELS
+                if len(json_obj[guild_id][channel_id]) == 0:
+                    channels_to_remove.append((guild_id, channel_id))
+                else:
+                    guild_has_role_givers = True
+            
+            if not guild_has_role_givers:
+                guilds_to_remove.append(guild_id)
+
+        remove_entities(json_obj, guilds_to_remove, channels_to_remove, [])
 
         # Save role givers
         with open("./modules_data/role_givers/role_givers", "w") as file:
