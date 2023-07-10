@@ -5,11 +5,10 @@ import logging, json
 from logging import Logger
 from typing import Dict, List, Tuple
 from nextcord.ext.commands import Cog, Bot
-from nextcord import Interaction, PartialInteractionMessage, Role, RawReactionActionEvent, Guild, TextChannel, Message, slash_command
-from nextcord import HTTPException, Forbidden, NotFound
+from nextcord import Interaction, PartialInteractionMessage, Role, RawReactionActionEvent, Guild, TextChannel, Message, Member, HTTPException, slash_command
 from role_givers_views import FullBlueprintView, RoleGiverDelete
 from role_givers_limited_view import LimitedBlueprintView
-from role_giver import RoleGiver, RoleGiverBlueprint
+from role_giver_classes import RoleGiver, RoleGiverBlueprint
 from emoji import is_emoji
 import config
 
@@ -37,7 +36,7 @@ class RoleGivers(Cog):
         self.client: Bot = client
         self.logger: Logger = logging.getLogger("bot")
 
-        self.role_givers: Dict[int, RoleGiver] = {}
+        self.role_givers: Dict[int, Dict[int, Dict[int, RoleGiver]]] = {}
         self.role_giver_blueprints: Dict[int, RoleGiverBlueprint] = {}
     
 
@@ -112,10 +111,33 @@ class RoleGivers(Cog):
                     except:
                         messages_to_remove.append((guild_id, channel_id, message_id))
                         continue
+                    
+                    # Fetch roles
+                    guild_roles: List[Role] = await guild.fetch_roles()
+                    roles = {}
 
-                    self.role_givers[INT_guild_id][INT_channel_id][INT_message_id] = message
+                    for emoji in json_obj[guild_id][channel_id][message_id]: # EMOJIS
+                        INT_role_id = json_obj[guild_id][channel_id][message_id][emoji]
+
+                        # Check if role still exists
+                        found_role = False
+
+                        for role in guild_roles:
+                            if role.id == INT_role_id:
+                                roles[emoji] = role
+                                found_role = True
+                                break
+                            
+                        # Role wansn't found
+                        if not found_role:
+                            self.logger.error(f"Role giver {message_id} in {guild.name}/{channel.name} couldn't find role {INT_role_id}.")
+                            roles[emoji] = None
+                    
+                    # Save role giver
+                    self.role_givers[INT_guild_id][INT_channel_id][INT_message_id] = RoleGiver(message, roles)
                     loaded_role_givers += 1
         
+        # Log info
         self.logger.info(f"Loaded {loaded_role_givers} role givers.")
         self.logger.info(f"Discarted {len(guilds_to_remove)}/{len(channels_to_remove)}/{len(messages_to_remove)} role giver entities.")
 
@@ -259,18 +281,16 @@ class RoleGivers(Cog):
         if payload.guild_id not in self.role_givers or payload.channel_id not in self.role_givers[payload.guild_id] or payload.message_id not in self.role_givers[payload.guild_id][payload.channel_id]:
             return
         
-        role_giver = self.role_givers[payload.guild_id][payload.channel_id][payload.message_id]
-        
-        # Collect message
-        channel = await self.client.fetch_channel(payload.channel_id)
-        message: Message = await channel.fetch_message(payload.message_id)
+        role_giver: RoleGiver = self.role_givers[payload.guild_id][payload.channel_id][payload.message_id]
 
         # Emoji isn't valid reaction
         if payload.emoji.name not in role_giver.roles:
-            await message.remove_reaction(payload.emoji, payload.member)
+            await role_giver.message.remove_reaction(payload.emoji, payload.member)
             return
         
-        await payload.member.add_roles(role_giver.roles[payload.emoji.name])
+        # Add role if it still exists
+        if role_giver.roles[payload.emoji.name] is not None:
+            await payload.member.add_roles(role_giver.roles[payload.emoji.name])
 
 
     @Cog.listener()
@@ -281,16 +301,22 @@ class RoleGivers(Cog):
             return
 
         # Message isn't a role giver
-        if payload.message_id not in self.role_givers:
+        if payload.guild_id not in self.role_givers or payload.channel_id not in self.role_givers[payload.guild_id] or payload.message_id not in self.role_givers[payload.guild_id][payload.channel_id]:
             return
         
-        role_giver = self.role_givers[payload.message_id]
+        role_giver: RoleGiver = self.role_givers[payload.guild_id][payload.channel_id][payload.message_id]
 
         # Emoji isn't valid reaction
         if payload.emoji.name not in role_giver.roles:
             return
         
-        await payload.member.remove_roles(role_giver.roles[payload.emoji.name])
+        # Fetch member
+        guild: Guild = await self.client.fetch_guild(payload.guild_id)
+        member: Member = await guild.fetch_member(payload.user_id)
+        
+        # Remove role if it still exists
+        if role_giver.roles[payload.emoji.name] is not None:
+            await member.remove_roles(role_giver.roles[payload.emoji.name])
 
 
 def load(client):

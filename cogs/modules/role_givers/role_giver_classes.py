@@ -1,11 +1,8 @@
 from nextcord import InteractionMessage, Role
-from typing import Dict
+from collections import namedtuple
 
 
-class RoleGiver:
-    def __init__(self, roles: Dict[str, Role], channel_id: int):
-        self.roles = roles
-        self.channel_id = channel_id
+RoleGiver = namedtuple("RoleGiver", ["message", "roles"])
 
 
 class RoleGiverBlueprint:

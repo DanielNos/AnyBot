@@ -3,7 +3,7 @@ from logging import Logger, getLogger
 from typing import Dict
 from nextcord.ui import View, Button, button
 from nextcord import ButtonStyle, Interaction, Message
-from role_giver import RoleGiverBlueprint, RoleGiver
+from role_giver_classes import RoleGiverBlueprint, RoleGiver
 from role_givers_modals import RemoveRoleModal
 
 
@@ -75,8 +75,7 @@ class FullBlueprintView(View):
 
         # Create new message and role giver
         message: Message = await interaction.channel.send(interaction.message.content)
-        self.role_givers[message.id] = { message.channel.id: roles }
-        print(self.role_givers)
+        self.role_givers[interaction.guild.id][interaction.channel_id][message.id] = RoleGiver(message, roles)
 
         # SAVE ROLE GIVER
         # Check if folder exists
@@ -93,7 +92,7 @@ class FullBlueprintView(View):
         with open("./modules_data/role_givers/role_givers", "r") as file:
             json_obj = json.load(file)
         
-        # Flatten roles
+        # Flatten roles (nextcord.Message -> message_id: int)
         json_roles = {}
         for role in roles:
             json_roles[role] = roles[role].id

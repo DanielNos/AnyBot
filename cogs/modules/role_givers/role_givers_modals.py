@@ -1,7 +1,7 @@
 from logging import Logger, getLogger
 from nextcord import Interaction
 from nextcord.ui import Modal, TextInput
-from role_giver import RoleGiverBlueprint
+from role_giver_classes import RoleGiverBlueprint
 from role_givers_limited_view import LimitedBlueprintView
 
 
