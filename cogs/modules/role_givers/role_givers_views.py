@@ -7,6 +7,16 @@ from role_giver_classes import RoleGiverBlueprint, RoleGiver
 from role_givers_modals import RemoveRoleModal
 
 
+def safe_insert(dict: Dict, key1, key2, key3, value):
+    if key1 in dict:
+        if key2 in dict[key1]:
+            dict[key1][key2][key3] = value
+        else:
+            dict[key1][key2] = {key3: value}
+    else:
+        dict[key1] = {key2: {key3: value}}
+
+
 class RoleGiverDelete(View):
     def __init__(self, blueprints: Dict[int, RoleGiverBlueprint], user_id: int):
         super().__init__(timeout=None)
@@ -75,8 +85,8 @@ class FullBlueprintView(View):
 
         # Create new message and role giver
         message: Message = await interaction.channel.send(interaction.message.content)
-        self.role_givers[interaction.guild.id][interaction.channel_id][message.id] = RoleGiver(message, roles)
-
+        safe_insert(self.role_givers, interaction.guild_id, interaction.channel_id, message.id, RoleGiver(message, roles))
+        
         # SAVE ROLE GIVER
         # Check if folder exists
         if not os.path.exists("./modules_data/role_givers/"):
@@ -98,13 +108,7 @@ class FullBlueprintView(View):
             json_roles[role] = roles[role].id
 
         # Insert data
-        if str(interaction.guild_id) in json_obj:
-            if str(interaction.channel_id) in json_obj[str(interaction.guild_id)]:
-                json_obj[str(interaction.guild_id)][str(interaction.channel_id)][str(message.id)] = json_roles
-            else:
-                json_obj[str(interaction.guild_id)][str(interaction.channel_id)] = {message.id: json_roles}
-        else:
-            json_obj[interaction.guild_id] = {interaction.channel_id: {message.id: json_roles}}
+        safe_insert(json_obj, str(interaction.guild_id), str(interaction.channel_id), str(message.id), json_roles)
 
         # Save data
         with open("./modules_data/role_givers/role_givers", "w") as file:
