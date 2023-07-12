@@ -291,6 +291,7 @@ class RoleGivers(Cog):
         # Add role if it still exists
         if role_giver.roles[payload.emoji.name] is not None:
             await payload.member.add_roles(role_giver.roles[payload.emoji.name])
+            self.logger.info(f"{payload.member.name} has recieved role {role_giver.roles[payload.emoji.name].name} from role giver {payload.message_id} in {payload.guild_id}/{payload.channel_id}.")
 
 
     @Cog.listener()
@@ -317,6 +318,7 @@ class RoleGivers(Cog):
         # Remove role if it still exists
         if role_giver.roles[payload.emoji.name] is not None:
             await member.remove_roles(role_giver.roles[payload.emoji.name])
+            self.logger.info(f"{member.name} has removed his role {role_giver.roles[payload.emoji.name].name} from role giver {payload.message_id} in {payload.guild_id}/{payload.channel_id}.")
 
 
 def load(client):

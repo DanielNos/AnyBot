@@ -96,6 +96,8 @@ class SoundBoard(Cog):
         await interaction.response.send_message(embed=self.create_embed(sound_board), view=self.create_view(sound_board))
         sound_board.messages.append(await interaction.original_message())
 
+        self.logger.info(f"{interaction.user.name} has opened a sound board in {interaction.guild.name}/{interaction.channel.name}.")
+
     
     @slash_command(name="upload_sound", description="Uploads a sound to sound board.", guild_ids=config.DEBUG["test_guilds"])
     async def upload_sound(self, interaction:Interaction, sound: Attachment, emoji: str = ""):
@@ -126,6 +128,8 @@ class SoundBoard(Cog):
         # Save sounds
         await sound.save("./modules_data/sound_board/" + name)
         await interaction.response.send_message(f"✅ Successfully uploaded {sound.filename} as `{entry_name}`.\nIt will be usable after the next bot restart.")
+
+        self.logger.info(f"{interaction.user.name} has uploaded sound {name} to sound board.")
 
 
 def load(client):

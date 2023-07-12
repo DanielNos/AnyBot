@@ -108,6 +108,8 @@ class Help(Cog):
     async def help(self, interaction: Interaction):
         await interaction.response.send_message(embed=self.help_embeds[0], view=HelpView(self.logger, self.help_embeds))
 
+        self.logger.info(f"{interaction.user.name} has opened help in {interaction.guild.name}/{interaction.channel.name}.")
+
 
 def load(client):
     client.add_cog(Help(client))

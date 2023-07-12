@@ -14,7 +14,6 @@ class SoundBoardButton(Button):
         self.manager = manager
         self.logger: Logger = getLogger("bot")
 
-
     
     async def callback(self, interaction: Interaction):
 
@@ -44,12 +43,15 @@ class SoundBoardButton(Button):
             # Add to queue
             if len(self.manager.queue) < QUEUE_SIZE:
                 self.manager.queue.insert(0, (name, path))
+                self.logger.info(f"Sound {name} was added to sound board queue by {interaction.user.name}.")
             
             return
 
         # Play sound
         source = PCMVolumeTransformer(FFmpegPCMAudio(os.path.abspath(path)), self.manager.volume / 100)
         self.manager.voice_client.play(source, after=lambda e: self.logger.error(f'Player error: {e}') if e else None)
+        
+        self.logger.info(f"Sound {name} was played by bot in {self.manager.voice_client.guild.name}/{self.manager.voice_client.channel}.")
 
         await self.update_indicator(name)
 

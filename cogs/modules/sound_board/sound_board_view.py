@@ -95,7 +95,7 @@ class SoundBoardControls(View):
         await self.update_embed(embed)
 
     
-    async def set_volume(self, volume: int):
+    async def set_volume(self, volume: int, member_name: str):
         # Clamp value
         if volume > 150:
             volume = 150
@@ -109,6 +109,7 @@ class SoundBoardControls(View):
         embed.set_field_at(index=1, name="Volume:", value=str(self.manager.volume) + "%")
 
         await self.update_embed(embed)
+        self.logger.info(f"Sound board volume was set to {volume} by {member_name}.")
 
 
     @button(label="Connect", style=ButtonStyle.green)
@@ -123,6 +124,7 @@ class SoundBoardControls(View):
         if self.manager.voice_client is None:
             self.logger.info(f"Connecting to \"{interaction.user.voice.channel.name}\" voice channel at {interaction.user.guild.name}.")
             self.manager.voice_client = await interaction.user.voice.channel.connect()
+            print(self.manager.voice_client.channel)
         # Change channel
         elif self.manager.voice_client.channel != interaction.user.voice.channel:
             self.logger.info(f"Moving from \"{self.manager.voice_client.channel.name}\" to \"{interaction.user.voice.channel.name}\" voice channel at {interaction.user.guild.name}.")
@@ -136,6 +138,8 @@ class SoundBoardControls(View):
         await self.set_channel(self.manager.voice_client.channel.name)
 
         await interaction.response.defer()
+
+        self.logger.info(f"Bot was connected to voice channel {interaction.user.voice.channel.guild.name}/{interaction.user.voice.channel.name} by {interaction.user.name}.")
     
 
     @button(label="Disconnect", style=ButtonStyle.red, disabled=True)
@@ -155,6 +159,8 @@ class SoundBoardControls(View):
         await self.set_channel()
 
         await interaction.response.defer()
+
+        self.logger.info(f"Bot was disconnected from voice channel by {interaction.user.name}.")
 
     
     @button(label="", emoji="⬅️", style=ButtonStyle.gray, disabled=True)

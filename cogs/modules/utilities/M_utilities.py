@@ -31,7 +31,9 @@ class Utilities(Cog):
         deleted = await interaction.channel.purge(limit=amount)
         await interaction.response.send_message(f"✅ Successfully removed {len(deleted)} messages.", ephemeral=True)
 
+        self.logger.info(f"{interaction.user.name} has cleared {amount} messages in {interaction.guild.name}/{interaction.channel.name}.")
     
+
     @slash_command(name="avatar", description="Shows user's profile image.", guild_ids=config.DEBUG["test_guilds"])
     async def avatar(self, interaction: Interaction, user: Member = None):
 
@@ -45,6 +47,8 @@ class Utilities(Cog):
         embed.add_field(name="",value=f"[Download]({user.avatar.url})")
 
         await interaction.response.send_message(embed=embed)
+        
+        self.logger.info(f"{interaction.user.name} has shown avatar of user {user.name} in {interaction.guild.name}/{interaction.channel.name}.")
 
     
     @slash_command(name="info", description="Shows information about user.", guild_ids=config.DEBUG["test_guilds"])
@@ -77,6 +81,8 @@ class Utilities(Cog):
         embed.add_field(name="Joined server:", value=format_datetime(user.joined_at))
 
         await interaction.response.send_message(embed=embed)
+
+        self.logger.info(f"{interaction.user.name} has shown info about user {user.name} in {interaction.guild.name}/{interaction.channel.name}.")
     
 
 def load(client):

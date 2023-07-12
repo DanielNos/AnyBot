@@ -25,5 +25,5 @@ class VolumeModal(Modal):
             volume = 150
         
         # Update value
-        await self.view.set_volume(volume)
+        await self.view.set_volume(volume, interaction.user.name)
         await interaction.response.defer()

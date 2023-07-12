@@ -250,6 +250,7 @@ class EmbedBuilderEditor(View):
             return
 
         await interaction.edit(view=None)
+        self.logger.info(f"{interaction.user.name} has completed a embed in {interaction.guild.name}/{interaction.channel.name}.")
     
 
     @button(label="Finish (post as new)", style=ButtonStyle.green)

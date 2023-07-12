@@ -85,11 +85,16 @@ class WelcomeMessage(Cog):
                 self.messages[interaction.guild_id] = (True, message)
 
             await interaction.followup.send(f"✅ Welcome message was enabled and set to:\n{message}")
+            
+            self.logger.info(f"{interaction.user.name} has set welcome message of server {interaction.guild.name} to {message}.")
+            self.logger.info(f"{interaction.user.name} has enabled welcome message of server {interaction.guild.name}.")
         else:
             if save_welcome_message(interaction.guild_id, welcome_message[0], message):
                 self.messages[interaction.guild_id] = (welcome_message[0], message)
             
             await interaction.followup.send(f"✅ Welcome message was set to:\n{message}")
+
+            self.logger.info(f"{interaction.user.name} has set welcome message of server {interaction.guild.name} to {message}.")
 
 
     @welcome_message.subcommand(name="enabled", description="Enables/Disables the welcome message.")
@@ -110,6 +115,8 @@ class WelcomeMessage(Cog):
             
         await interaction.response.send_message(f"✅ Changed welcome message to `{ 'enabled' if enabled else 'disabled' }`.")
 
+        self.logger.info(f"{interaction.user.name} has { 'enabled' if enabled else 'disabled' } welcome message of server {interaction.guild.name}.")
+
 
     @welcome_message.subcommand(name="status", description="Shows information about server welcome message.")
     async def status(self, interaction: Interaction):
@@ -125,7 +132,6 @@ class WelcomeMessage(Cog):
 
     Cog.listener()
     async def on_member_join(self, member: Member):
-        print("GUILD: " + str(member.guild.id))
         message = self.messages.get(member.guild.id)
 
         # Return if message doesn't exist, is disabled or guild doesn't have a system channel
@@ -133,6 +139,8 @@ class WelcomeMessage(Cog):
             return
         
         await member.guild.system_channel.send(message[1].replace("$user$", member.mentions))
+
+        self.logger.info(f"Bot has welcomed user {member.name} in server {member.guild.name}.")
 
 
 def load(client):

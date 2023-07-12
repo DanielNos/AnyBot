@@ -113,6 +113,8 @@ class FullBlueprintView(View):
         # Save data
         with open("./modules_data/role_givers/role_givers", "w") as file:
             file.write(json.dumps(json_obj, indent=4))
+
+        self.logger.info(f"{interaction.user.name} has created role giver {message.id} in {interaction.guild.name}/{interaction.channel.name}.")
         
         # Add reactions to message
         for role in self.blueprint.roles:
