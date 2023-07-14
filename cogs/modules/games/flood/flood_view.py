@@ -30,7 +30,7 @@ class FloodView(View):
         board_str = board_arr_to_str(board)
 
         embed: Embed = interaction.message.embeds[0]
-        embed.set_field_at(0, name="Turn: " + str(self.turn) + (self.difficulty != -1) * ("/" + str(self.max_turns)), value=board_str)
+        embed.set_field_at(0, name=f"Turn: {self.turn}/{self.max_turns}", value=board_str)
 
         single_color = is_single_color(board)
         
