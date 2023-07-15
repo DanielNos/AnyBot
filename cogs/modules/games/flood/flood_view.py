@@ -52,7 +52,6 @@ class FloodView(View):
         await interaction.response.edit_message(embed=embed, view=self)
         
 
-
 class ColorButton(Button):
     def __init__(self, color_index: int, disabled: bool = False):
         super().__init__(emoji=COLOR_SQUARES[color_index], disabled=disabled)

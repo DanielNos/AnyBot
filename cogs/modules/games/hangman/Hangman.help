@@ -1,0 +1,4 @@
+hangman start [expression]
+Starts a game of hangman.
+hangman start_expression_pack [expression pack]
+Starts a game of hangman with random expression from expression pack.

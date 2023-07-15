@@ -2,4 +2,5 @@ logs
 *.log
 __pycache__
 *.mp3
-modules_data
+modules_data/*
+!modules_data/hangman/

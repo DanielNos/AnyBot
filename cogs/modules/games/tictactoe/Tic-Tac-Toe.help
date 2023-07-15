@@ -1,0 +1,6 @@
+tictactoe start [Singleplayer/Multiplayer] (opponent)
+Start a game of Tic-Tac-Toe.
+tictactoe play [row] [column]
+Play your turn of Tic-Tac-Toe.
+tictactoe concede
+Concedes your game of Tic-Tac-Toe.

@@ -27,7 +27,7 @@ class TicTacToe(commands.Cog):
         return
     
     
-    @tictactoe.subcommand(description="Concede your game of tic-tac-toe and let your opponent win.")
+    @tictactoe.subcommand(description="Concedes your game of Tic-Tac-Toe.")
     async def concede(self, interaction: Interaction):
 
         # Return if user isn't in a game
@@ -102,7 +102,7 @@ class TicTacToe(commands.Cog):
             self.games[game.opponent.id] = game
 
 
-    @tictactoe.subcommand(description="Play your turn of tictactoe.")
+    @tictactoe.subcommand(description="Play your turn of Tic-Tac-Toe.")
     async def play(self, interaction: Interaction, 
     row: int = SlashOption(name="row", choices={ "1": 0, "2": 1, "3": 2 }),
     column: int = SlashOption(name="column", choices={ "1": 0, "2": 1, "3": 2 })

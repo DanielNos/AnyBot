@@ -139,7 +139,7 @@ class RoleGivers(Cog):
         
         # Log info
         self.logger.info(f"Loaded {loaded_role_givers} role givers.")
-        self.logger.info(f"Discarted {len(guilds_to_remove)} guilds, {len(channels_to_remove)} channels, {len(messages_to_remove)} role givers from database.")
+        self.logger.info(f"Role givers module discarted {len(guilds_to_remove)} guilds, {len(channels_to_remove)} channels, {len(messages_to_remove)} role givers from database.")
 
         # Remove invalid guilds, channels and messages
         remove_entities(json_obj, guilds_to_remove, channels_to_remove, messages_to_remove)
