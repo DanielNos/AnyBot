@@ -2,5 +2,5 @@ clear (amount)
 Removes specified amount of messages. By default 5
 avatar (user)
 Shows user's profile image.
-info
+info (user)
 Shows information about user.

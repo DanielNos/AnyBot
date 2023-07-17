@@ -35,7 +35,7 @@ class Core(Cog):
             text += f" [attachments:"
             
             for attachment in message.attachments:
-                text += f" ({attachment.filename} : {attachment.url}"
+                text += f" ({attachment.filename} : {attachment.url})"
 
             text += "]"
 
