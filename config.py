@@ -1,5 +1,5 @@
 DEBUG = {
-    "test_guilds": [794290505273966604] # To disable debug, leave this empty
+    "test_guilds": [794290505273966604, 793074039996416012] # To disable debug, leave this empty. NON-EMPTY TEST GUILDS DISABLE GLOBAL COMMAND SYNC!
 }
 
 BOT = {

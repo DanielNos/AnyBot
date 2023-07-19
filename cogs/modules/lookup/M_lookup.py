@@ -1,6 +1,6 @@
 from logging import Logger, getLogger
 from nextcord.ext.commands import Cog, Bot
-from nextcord import Guild, channel, TextChannel, VoiceChannel, Message, User, Interaction, SlashOption, slash_command
+from nextcord import Guild, TextChannel, VoiceChannel, User, Interaction, SlashOption, slash_command
 from config import DEBUG
 
 
@@ -67,7 +67,6 @@ class Lookup(Cog):
             await interaction.response.send_message("❌ Not in cache.", ephemeral=True)
             return
         
-    
         if target == "User":
             # Fetch user
             try:
