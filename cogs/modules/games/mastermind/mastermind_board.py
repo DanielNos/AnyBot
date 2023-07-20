@@ -1,5 +1,6 @@
 from nextcord import Embed
 
+
 def create_board(combinations = None, turn = 0, correct = None):
     embed: Embed = Embed(title="Mastermind")
     

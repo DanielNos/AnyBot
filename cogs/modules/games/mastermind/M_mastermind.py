@@ -3,7 +3,7 @@ sys.path.append(os.path.dirname(__file__))
 
 from logging import Logger, getLogger
 from nextcord.ext.commands import Cog, Bot
-from nextcord import Embed, Interaction, slash_command
+from nextcord import Interaction, slash_command
 from config import DEBUG
 from mastemind_view import Controls
 from mastermind_board import create_board
