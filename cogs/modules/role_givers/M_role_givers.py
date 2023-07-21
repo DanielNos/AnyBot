@@ -2,7 +2,7 @@ import os, sys
 sys.path.append(os.path.dirname(__file__))
 
 import logging, json
-from logging import Logger
+from logging import Logger, getLogger
 from typing import Dict, List, Tuple
 from nextcord.ext.commands import Cog, Bot
 from nextcord import Interaction, PartialInteractionMessage, Role, RawReactionActionEvent, Guild, TextChannel, Message, Member, HTTPException, slash_command
@@ -10,10 +10,9 @@ from role_givers_views import FullBlueprintView, RoleGiverDelete
 from role_givers_limited_view import LimitedBlueprintView
 from role_giver_classes import RoleGiver, RoleGiverBlueprint
 from emoji import is_emoji
-import config
+from config import DEBUG, BOT
+from formatting import NUMBERS
 
-
-NUMBERS = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣", "🔟"]
 
 
 def remove_entities(json_obj: Dict[str, Dict[str, Dict[str, Dict[str, int]]]], guilds_to_remove: List[str], channels_to_remove: List[Tuple[str, str]], messages_to_remove: List[Tuple[str, str, str]]):
@@ -34,7 +33,7 @@ def remove_entities(json_obj: Dict[str, Dict[str, Dict[str, Dict[str, int]]]], g
 class RoleGivers(Cog):
     def __init__(self, client):
         self.client: Bot = client
-        self.logger: Logger = logging.getLogger("bot")
+        self.logger: Logger = getLogger("bot")
 
         self.role_givers: Dict[int, Dict[int, Dict[int, RoleGiver]]] = {}
         self.role_giver_blueprints: Dict[int, RoleGiverBlueprint] = {}
@@ -166,7 +165,7 @@ class RoleGivers(Cog):
             file.write(json.dumps(json_obj, indent=4))
                 
 
-    @slash_command(name="role_giver", guild_ids=config.DEBUG["test_guilds"])
+    @slash_command(name="role_giver", guild_ids=DEBUG["test_guilds"])
     async def role_giver(self, interaction: Interaction):
         pass
 
@@ -233,7 +232,7 @@ class RoleGivers(Cog):
                 
         # It can't assign it
         if not lower:
-            await interaction.response.send_message(f"❌ This role is above or equal to the highest {config.BOT['name']}s role. {config.BOT['name']} can assign only roles lower than his.", ephemeral=True)
+            await interaction.response.send_message(f"❌ This role is above or equal to the highest {BOT['name']}s role. {config.BOT['name']} can assign only roles lower than his.", ephemeral=True)
             return
 
         # Emoji is provided
