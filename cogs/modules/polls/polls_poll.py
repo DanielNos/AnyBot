@@ -36,9 +36,13 @@ def check_files():
 def save_polls(polls: Dict):
     check_files()
 
+    json_obj = polls.copy()
+    for key in json_obj:
+        json_obj[key] = Poll(polls[key].emojis, polls[key].can_change_votes, [list(votes) for votes in polls[key].voted])
+
     # Write data
     with open("./modules_data/polls/polls", "w") as file:
-        file.write(json.dumps(polls, indent=4))
+        file.write(json.dumps(json_obj, indent=4))
 
 
 def save_poll(id: int, poll: Poll):
@@ -48,8 +52,8 @@ def save_poll(id: int, poll: Poll):
     with open("./modules_data/polls/polls", "r") as file:
         json_obj = json.load(file)
 
-    # Insert poll
-    json_obj[str(id)] = [poll.emojis, poll.can_change_votes, poll.voted]
+    # Insert/Replace poll
+    json_obj[str(id)] = [poll.emojis, poll.can_change_votes, [list(votes) for votes in poll.voted]]
 
     with open("./modules_data/polls/polls", "w") as file:
         file.write(json.dumps(json_obj, indent=4))
@@ -66,6 +70,10 @@ def load_polls() -> Dict[int, Poll]:
     # Convert keys from strings to ints
     polls = {}
     for key in json_obj:
-        polls[int(key)] = Poll(json_obj[key][0], json_obj[key][1], json_obj[key][2])
+        voted = []
+        for votes in json_obj[key][2]:
+            voted.append(set(votes))
+
+        polls[int(key)] = Poll(json_obj[key][0], json_obj[key][1], voted)
 
     return polls

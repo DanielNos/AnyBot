@@ -2,7 +2,7 @@ from logging import Logger, getLogger
 from nextcord.ui import View, Button
 from nextcord import ButtonStyle, Interaction, Message
 from polls_modal import AddOptionModal
-from polls_poll import Poll, save_polls, save_poll
+from polls_poll import Poll, save_poll
 
 
 class PollDesignerView(View):
@@ -52,6 +52,9 @@ class PollDesignerView(View):
         message: Message = await interaction.response.edit_message(view=None)
         for emoji in self.poll.emojis:
             await message.add_reaction(emoji)
+
+        for i in self.poll.emojis:
+            self.poll.voted.append(set())
 
         # Save polls to file
         save_poll(interaction.message.id, self.poll)

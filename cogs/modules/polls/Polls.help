@@ -1,0 +1,4 @@
+poll create [text]
+Creates a poll.
+poll lock [id]
+Locks a poll so users won't be able to vote or change votes anymore. This can't be reverted!
