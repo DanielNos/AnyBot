@@ -10,7 +10,8 @@ BOT = {
 
 AUTHOR = {
     "name": "Daniel Nos",
-    "url": "https://github.com/DanielNos"
+    "url": "https://github.com/DanielNos",
+    "id": 277796227397976064
 }
 
 LOGGING_CONFIG = {

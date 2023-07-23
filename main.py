@@ -64,7 +64,7 @@ if __name__ == "__main__":
     dictConfig(config.LOGGING_CONFIG)
 
     # Start client
-    client: Bot = Bot(command_prefix="ž", intents=nextcord.Intents.all())
+    client: Bot = Bot(command_prefix="nos ", intents=nextcord.Intents.all(), help_command=None)
 
     asyncio.run(load_cogs(client))
 
