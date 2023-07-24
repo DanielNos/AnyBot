@@ -64,7 +64,7 @@ class HangmanView(View):
 
         game: Game = self.users_in_games[interaction.user.id]
 
-        self.logger.info(f"{interaction.user.name} has left a game of Hangman ({game.message.id}).")
+        self.logger.info(f"{interaction.user.name} has left a game ({game.message.id}).")
 
         # Remove game if user is it's creator
         if game.creator.id == interaction.user.id:

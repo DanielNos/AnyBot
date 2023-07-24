@@ -1,5 +1,6 @@
 from logging import Logger
 from typing import List
+from formatting import get_place
 from nextcord import Embed, ButtonStyle, Interaction, TextInputStyle
 from nextcord.ui import View, Button, TextInput, button
 from embed_builder_modals import InputsModal
@@ -250,7 +251,7 @@ class EmbedBuilderEditor(View):
             return
 
         await interaction.edit(view=None)
-        self.logger.info(f"{interaction.user.name} has completed a embed in {interaction.guild.name}/{interaction.channel.name}.")
+        self.logger.info(f"{interaction.user.name} has completed a embed in {get_place(interaction)}.")
     
 
     @button(label="Finish (post as new)", style=ButtonStyle.green)

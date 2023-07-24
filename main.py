@@ -2,7 +2,7 @@ import os, nextcord, logging, asyncio
 from importlib import import_module
 from nextcord.ext.commands import Bot
 from logging.config import dictConfig
-import config
+from config import BOT, LOGGING_CONFIG
 
 
 async def load_cogs_from_directory(client: Bot, logger: logging.Logger, directory: str):
@@ -54,18 +54,18 @@ async def load_cogs(client: Bot):
 
 if __name__ == "__main__":
     # Collect token
-    token = os.getenv("NOSBOT_DISCORD_API_TOKEN")
-    if token == None:
-        print("No Discord API token set. Assign your API token to the NOSBOT_DISCORD_API_TOKEN enviroment variable.")
+    token = os.getenv(f"{BOT['name'].upper()}_DISCORD_API_TOKEN")
+    if token is None:
+        print(f"No Discord API token set. Assign your API token to the {BOT['name'].upper()}_DISCORD_API_TOKEN enviroment variable.")
         exit(1)
 
     # Setup logger
     if not os.path.isdir("./logs"):
         os.mkdir("./logs")
-    dictConfig(config.LOGGING_CONFIG)
+    dictConfig(LOGGING_CONFIG)
 
     # Start client
-    client: Bot = Bot(command_prefix="nos ", intents=nextcord.Intents.all(), help_command=None)
+    client: Bot = Bot(command_prefix=BOT["command_prefix"], intents=nextcord.Intents.all(), help_command=None)
 
     asyncio.run(load_cogs(client))
 

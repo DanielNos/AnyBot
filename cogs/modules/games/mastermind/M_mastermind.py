@@ -17,7 +17,7 @@ class Mastermind(Cog):
 
     @slash_command(guild_ids=DEBUG["test_guilds"], description="Start a game of mastermind.")
     async def mastermind(self, interaction: Interaction):
-        self.logger.info(f"{interaction.user.name} has started a game of Mastermind.")
+        self.logger.info(f"{interaction.user.name} has started a game.")
 
         await interaction.response.send_message(embed=create_board(), view=Controls(), ephemeral=True)
 

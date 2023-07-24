@@ -7,6 +7,7 @@ from random import randint
 from nextcord.ext import commands
 from nextcord import slash_command, PartialInteractionMessage, Interaction, SlashOption, Member, Embed, Message, User, RawMessageDeleteEvent, RawBulkMessageDeleteEvent
 from tictactoe_game import Game
+from formatting import get_place
 
 
 INFO_DELETE_TIME = 6
@@ -49,7 +50,7 @@ class TicTacToe(commands.Cog):
         embed.set_footer(text=loser.name + "#" + loser.discriminator + " has conceded.")
 
         await interaction.response.send_message(embed=embed, delete_after=WINNER_DELETE_TIME)
-        self.logger.info(f"{interaction.user.name} conceded their game of Tic-Tac-Toe ({game.message.id} in {game.message.guild.name}/{game.message.channel.name}.")
+        self.logger.info(f"{interaction.user.name} conceded their game ({game.message.id} in {get_place(interaction)}.")
 
         # Delete game
         game.delete()
@@ -60,7 +61,7 @@ class TicTacToe(commands.Cog):
                     type: str = SlashOption(name="type", choices=["Singleplayer", "Multiplayer"]),
                     opponent: Member = None
                     ):
-        self.logger.info(f"{interaction.user.name} has started a {type} game of Tic-Tac-Toe in {interaction.guild.name}/{interaction.channel.name}.")
+        self.logger.info(f"{interaction.user.name} has started a {type} game in {get_place(interaction)}.")
 
         singleplayer = (type == "Singleplayer")
 
@@ -129,7 +130,7 @@ class TicTacToe(commands.Cog):
         game.play(row, column)
         await game.message.edit(embed=game.board_render)
         
-        self.logger.info(f"{interaction.user.name} has played a turn of Tic-Tac-Toe ({game.message.id}): row={row}, column={column}.")
+        self.logger.info(f"{interaction.user.name} has played a turn ({game.message.id}): row={row}, column={column}.")
 
         # Check for winner
         winner = check_for_winner(game)
@@ -171,7 +172,7 @@ class TicTacToe(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_message_delete(self, event: RawMessageDeleteEvent):
         if event.message_id in self.game_messages.keys():
-            self.logger.info(f"Tic-Tac-Toe ({event.message_id}) message was deleted. Removing game instance.")
+            self.logger.info(f"Game ({event.message_id}) message was deleted. Removing game instance.")
 
             player_id = self.game_messages.pop(event.message_id)
             game: Game = self.games[player_id]
@@ -185,7 +186,7 @@ class TicTacToe(commands.Cog):
     async def on_raw_bulk_message_delete(self, event: RawBulkMessageDeleteEvent):
         for id in event.message_ids:
             if id in self.game_messages.keys():
-                self.logger.info(f"Tic-Tac-Toe ({id}) message was deleted. Removing game instance.")
+                self.logger.info(f"Game ({id}) message was deleted. Removing game instance.")
 
                 player_id = self.game_messages.pop(id)
                 game: Game = self.games[player_id]

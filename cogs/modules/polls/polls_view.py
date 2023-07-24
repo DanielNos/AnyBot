@@ -3,12 +3,14 @@ from nextcord.ui import View, Button
 from nextcord import ButtonStyle, Interaction, Message
 from polls_modal import AddOptionModal
 from polls_poll import Poll, save_poll
+from formatting import get_place
 
 
 class PollDesignerView(View):
     def __init__(self, polls, enable_complete: bool = False):
         super().__init__()
         self.logger: Logger = getLogger("bot")
+        
         self.poll = Poll([], True, [])
         self.polls = polls
 
@@ -58,3 +60,4 @@ class PollDesignerView(View):
 
         # Save polls to file
         save_poll(interaction.message.id, self.poll)
+        self.logger.info(f"{interaction.user.name} has completed a poll {interaction.message.id} in {get_place(interaction)}.")

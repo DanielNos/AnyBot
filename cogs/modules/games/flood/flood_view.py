@@ -1,11 +1,15 @@
 from nextcord.ui import View, Button
 from nextcord import Interaction, Embed
 from flood_board import *
+from logging import Logger, getLogger
+from formatting import get_place
 
 
 class FloodView(View):
     def __init__(self, difficulty: bool, color_count: int, size: int, first_color: int, max_turns: int):
         super().__init__()
+        self.logger: Logger = getLogger("bot")
+
         self.difficulty = difficulty
         self.color_count = color_count
         self.size = size
@@ -39,11 +43,15 @@ class FloodView(View):
             embed.add_field(name="🎉 You won! 🎉", value="Congratulations!", inline=False)
             embed.set_footer(text="")
             self.children = []
+
+            self.logger.info(f"{interaction.user.name} has won a game in {get_place(interaction)}.")
         # Defeat
         elif self.difficulty != -1 and self.turn >= self.max_turns:
             embed.add_field(name="💢 You lost! 💢", value="Better luck next time!", inline=False)
             embed.set_footer(text="")
             self.children = []
+
+            self.logger.info(f"{interaction.user.name} has lost a game of Flood in {get_place(interaction)}.")
         # Next turn
         else:
             for i in range(len(self.children)):

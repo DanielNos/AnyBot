@@ -32,7 +32,7 @@ class Hangman(Cog):
         self.users_in_games: Dict[int, Game] = {}
         self.game_messages: Dict[int, int] = {}
 
-        self.logger.info(f"Hangman module loaded {len(PACKS)} expression packs.")    
+        self.logger.info(f"Loaded {len(PACKS)} expression packs.")    
     
 
     @slash_command(guild_ids=DEBUG["test_guilds"])
@@ -45,7 +45,7 @@ class Hangman(Cog):
         # Return if user is in a game
         if interaction.user.id in self.users_in_games.keys():
             game: Game = self.users_in_games[interaction.user.id]
-            await interaction.response.send_message(f"❌ You are already in a game of hangman in {game.message.guild.name}/{game.message.channel.name}. You can leave it using the `Leave` button under the game message.", ephemeral=True)
+            await interaction.response.send_message(f"❌ You are already in a game of Hangman in {game.message.guild.name}/{game.message.channel.name}. You can leave it using the `Leave` button under the game message.", ephemeral=True)
             return
 
         # Create game
@@ -62,7 +62,7 @@ class Hangman(Cog):
 
     @hangman.subcommand(description="Starts a game of hangman.")
     async def start(self, interaction: Interaction, expression: str):
-        self.logger.info(f"{interaction.user.name} has started a game of Hangman with expression {expression} in {interaction.guild.name}/{interaction.channel.name}.")
+        self.logger.info(f"{interaction.user.name} has started a game with expression {expression} in {interaction.guild.name}/{interaction.channel.name}.")
 
         # Remove illegal characters from expression
         legal_expression = ""
@@ -81,7 +81,7 @@ class Hangman(Cog):
     async def start_expression_pack(self, interaction: Interaction, expression_pack: str = SlashOption(choices=PACKS.keys(), description="Theme from which a word will be picked.")):
         word = choice(PACKS[expression_pack])
 
-        self.logger.info(f"{interaction.user.name} has started a game of Hangman with expression \"{word}\" from pack {expression_pack} in {interaction.guild.name}/{interaction.channel.name}.")
+        self.logger.info(f"{interaction.user.name} has started a game with expression \"{word}\" from pack {expression_pack} in {interaction.guild.name}/{interaction.channel.name}.")
         
         await self.start_game(interaction, word, True)
 
@@ -91,7 +91,7 @@ class Hangman(Cog):
         if event.message_id in self.game_messages.keys():
             game: Game = self.users_in_games[self.game_messages[event.message_id]]
 
-            self.logger.info(f"Hangman ({event.message_id}) message in {game.message.guild.name}/{game.message.channel.name} was deleted. Removing game instance.")
+            self.logger.info(f"Game ({event.message_id}) message in {game.message.guild.name}/{game.message.channel.name} was deleted. Removing game instance.")
             self.users_in_games[self.game_messages[event.message_id]].delete()
     
 
@@ -101,7 +101,7 @@ class Hangman(Cog):
             if id in self.game_messages.keys():
                 game: Game = self.users_in_games[self.game_messages[id]]
 
-                self.logger.info(f"Hangman ({id}) message in {game.message.guild.name}/{game.message.channel.name} was deleted. Removing game instance.")
+                self.logger.info(f"Game ({id}) message in {game.message.guild.name}/{game.message.channel.name} was deleted. Removing game instance.")
                 self.users_in_games[self.game_messages[id]].delete()
 
 

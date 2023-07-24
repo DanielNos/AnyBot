@@ -8,6 +8,7 @@ from nextcord import slash_command, Color, RawBulkMessageDeleteEvent, PartialInt
 from config import DEBUG
 from polls_poll import Poll, progress_bar, save_polls, load_polls, save_poll
 from polls_view import PollDesignerView
+from formatting import get_place
 
 
 class Polls(Cog):
@@ -17,7 +18,7 @@ class Polls(Cog):
         
         self.locked_polls = []
         self.polls: Dict[int, Poll] = load_polls()
-        self.logger.info(f"Polls module loaded {len(self.polls)} polls.")
+        self.logger.info(f"Loaded {len(self.polls)} polls.")
 
 
     @slash_command(guild_ids=DEBUG["test_guilds"], description="Create a poll.")
@@ -28,7 +29,7 @@ class Polls(Cog):
     @poll.subcommand(description="Creates a poll.")
     async def create(self, interaction: Interaction, text: str):
 
-        self.logger.info(f"{interaction.user.name} has created a poll with text: {text}")
+        self.logger.info(f"{interaction.user.name} has created a poll with text \"{text}\" in {get_place(interaction)}.")
 
         # Send message
         embed: Embed = Embed(title=text, color=Color.random())

@@ -1,9 +1,9 @@
-import logging, os
+import os
 from typing import Tuple, Dict
-from logging import Logger
+from logging import Logger, getLogger
 from nextcord.ext.commands import Cog, Bot
 from nextcord import Member, Interaction, slash_command
-import config
+from config import DEBUG
 
 
 def check_directory() -> bool:
@@ -50,13 +50,13 @@ def load_welcome_messages() -> Dict[int, Tuple[bool, str]]:
 class WelcomeMessage(Cog):
     def __init__(self, client):
         self.client: Bot = client
-        self.logger: Logger = logging.getLogger("bot")
+        self.logger: Logger = getLogger("bot")
         
         self.messages = load_welcome_messages()
         self.logger.info(f"Loaded {len(self.messages)} welcome messages.")
     
 
-    @slash_command(name="welcome_message", guild_ids=config.DEBUG["test_guilds"])
+    @slash_command(name="welcome_message", guild_ids=DEBUG["test_guilds"])
     async def welcome_message(self, interaction: Interaction):
         pass
 

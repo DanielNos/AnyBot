@@ -3,6 +3,7 @@ DEBUG = {
 }
 
 BOT = {
+    "command_prefix": "nos ",
     "name": "NosBot",
     "icon": "https://raw.githubusercontent.com/4lt3rnative/nosbot/main/nosbot.png",
     "color": 0xFBCE9D
@@ -19,7 +20,7 @@ LOGGING_CONFIG = {
     "disabled_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": "\033[0;97m%(asctime)s   \033[1;96m%(levelname)-6s \033[93m%(asctime)s   \033[1;97m%(module)-10s   \033[0;97m%(message)s",
+            "format": "\033[0;97m%(asctime)s   \033[1;96m%(levelname)-6s \033[93m%(name)s - %(module)-18s   \033[0;97m%(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S"
         },
         "standard": {
@@ -35,12 +36,12 @@ LOGGING_CONFIG = {
         "console": {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
-            "formatter": "standard"
+            "formatter": "verbose"
         },
         "file": {
             "level": "INFO",
             "class": "logging.FileHandler",
-            "filename": "logs/nosbot.log",
+            "filename": "logs/bot.log",
             "formatter": "verbose"
         },
         "chatConsole": {

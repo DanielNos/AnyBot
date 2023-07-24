@@ -45,7 +45,7 @@ class SoundBoard(Cog):
             else:
                 self.sounds.append((name[0], name[1:]))
 
-        self.logger.info(f"Loaded {len(self.sounds)} sounds to sound board.")
+        self.logger.info(f"Loaded {len(self.sounds)} sounds.")
     
 
     def create_view(self, sound_board: SoundBoardManager) -> View:
@@ -96,7 +96,7 @@ class SoundBoard(Cog):
         await interaction.response.send_message(embed=self.create_embed(sound_board), view=self.create_view(sound_board))
         sound_board.messages.append(await interaction.original_message())
 
-        self.logger.info(f"{interaction.user.name} has opened a sound board in {interaction.guild.name}/{interaction.channel.name}.")
+        self.logger.info(f"{interaction.user.name} has opened a sound board in {get_place(interaction)}.")
 
     
     @slash_command(name="upload_sound", description="Uploads a sound to sound board.", guild_ids=config.DEBUG["test_guilds"])

@@ -5,8 +5,8 @@ import logging
 from logging import Logger
 from nextcord.ext.commands import Cog, Bot
 from nextcord import Embed, Interaction, slash_command
-import config
 from embed_builder_view import EmbedBuilderEditor
+from formatting import get_place
 
 
 class EmbedBuilder(Cog):
@@ -15,12 +15,13 @@ class EmbedBuilder(Cog):
         self.logger: Logger = logging.getLogger("bot")
 
 
-    @slash_command(name="create_embed", description="Opens new embed builder.")
+    @slash_command(description="Opens new embed builder.")
     async def create_embed(self, interaction: Interaction):
 
         embed: Embed = Embed(description="description")
         await interaction.response.send_message(embed=embed, view=EmbedBuilderEditor(self.logger, embed, interaction.user.id))
-
+        
+        self.logger.info(f"{interaction.user.name} has created new embed builder in {get_place(interaction)}.")
 
 
 def load(client):

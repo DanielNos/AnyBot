@@ -8,6 +8,7 @@ from random import randint
 import config
 from flood_view import FloodView
 from flood_board import *
+from formatting import get_place
 
 
 class Flood(commands.Cog):
@@ -22,7 +23,7 @@ class Flood(commands.Cog):
     size: int = SlashOption(choices={"8x8": 8, "9x9": 9, "10x10": 10, "11x11": 11, "12x12": 12, "13x13": 13, "14x14": 14}, description="The size of the board."),
     colors: int = SlashOption(choices=[3, 4, 5, 6, 7, 8], description="How many colors there will be.")):
         
-        self.logger.info(f"{(interaction.user.name)} has started a game of flood difficulty={str(difficulty)} size={str(size)}x{str(size)} color_count={str(colors)}.")
+        self.logger.info(f"{(interaction.user.name)} has started a game difficulty={str(difficulty)} size={str(size)}x{str(size)} color_count={str(colors)} in {get_place(interaction)}.")
 
         # Generate board
         board = []

@@ -5,6 +5,7 @@ from nextcord.ui import View, Button, button
 from nextcord import ButtonStyle, Interaction, Message
 from role_giver_classes import RoleGiverBlueprint, RoleGiver
 from role_givers_modals import RemoveRoleModal
+from formatting import get_place
 
 
 def safe_insert(dict: Dict, key1, key2, key3, value):
@@ -114,7 +115,7 @@ class FullBlueprintView(View):
         with open("./modules_data/role_givers/role_givers", "w") as file:
             file.write(json.dumps(json_obj, indent=4))
 
-        self.logger.info(f"{interaction.user.name} has created role giver {message.id} in {interaction.guild.name}/{interaction.channel.name}.")
+        self.logger.info(f"{interaction.user.name} has created role giver {message.id} in {get_place(interaction)}.")
         
         # Add reactions to message
         for role in self.blueprint.roles:

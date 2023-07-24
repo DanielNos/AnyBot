@@ -1,8 +1,9 @@
-import logging, datetime
-from logging import Logger
+import datetime
+from logging import Logger, getLogger
 from nextcord import Interaction, Member, Embed, slash_command
 from nextcord.ext.commands import Cog, Bot
-import config
+from config import DEBUG
+from formatting import get_place
 
 
 def format_datetime(obj: datetime.datetime) -> str:
@@ -18,10 +19,10 @@ def format_datetime(obj: datetime.datetime) -> str:
 class Utilities(Cog):
     def __init__(self, client):
         self.client: Bot = client
-        self.logger: Logger = logging.getLogger("bot")
+        self.logger: Logger = getLogger("bot")
 
 
-    @slash_command(name="clear", description="Removes specified amount of messages. By default 5.", guild_ids=config.DEBUG["test_guilds"])
+    @slash_command(name="clear", description="Removes specified amount of messages. By default 5.", guild_ids=DEBUG["test_guilds"])
     async def clear(self, interaction: Interaction, amount: int = 5):
         
         if amount < 1 or amount > 100:
@@ -31,10 +32,10 @@ class Utilities(Cog):
         deleted = await interaction.channel.purge(limit=amount)
         await interaction.response.send_message(f"✅ Successfully removed {len(deleted)} messages.", ephemeral=True)
 
-        self.logger.info(f"{interaction.user.name} has cleared {amount} messages in {interaction.guild.name}/{interaction.channel.name}.")
+        self.logger.info(f"{interaction.user.name} has cleared {amount} messages in {get_place(interaction)}.")
     
 
-    @slash_command(name="avatar", description="Shows user's profile image.", guild_ids=config.DEBUG["test_guilds"])
+    @slash_command(name="avatar", description="Shows user's profile image.", guild_ids=DEBUG["test_guilds"])
     async def avatar(self, interaction: Interaction, user: Member = None):
 
         # No target
@@ -48,10 +49,10 @@ class Utilities(Cog):
 
         await interaction.response.send_message(embed=embed)
         
-        self.logger.info(f"{interaction.user.name} has shown avatar of user {user.name} in {interaction.guild.name}/{interaction.channel.name}.")
+        self.logger.info(f"{interaction.user.name} has shown avatar of user {user.name} in {get_place(interaction)}.")
 
     
-    @slash_command(name="info", description="Shows information about user.", guild_ids=config.DEBUG["test_guilds"])
+    @slash_command(name="info", description="Shows information about user.", guild_ids=DEBUG["test_guilds"])
     async def info(self, interaction: Interaction, user: Member = None):
         
         # No target
@@ -82,7 +83,7 @@ class Utilities(Cog):
 
         await interaction.response.send_message(embed=embed)
 
-        self.logger.info(f"{interaction.user.name} has shown info about user {user.name} in {interaction.guild.name}/{interaction.channel.name}.")
+        self.logger.info(f"{interaction.user.name} has shown info about user {user.name} in {get_place(interaction)}.")
     
 
 def load(client):

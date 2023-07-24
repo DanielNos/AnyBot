@@ -44,7 +44,7 @@ class HangmanInput(Modal):
         
         game: Game = self.users_in_games[interaction.user.id]
 
-        self.logger.info(f"{interaction.user.name} has guessed the letter {letter} in a game of Hangman ({game.message.id}).")
+        self.logger.info(f"{interaction.user.name} has guessed the letter {letter} in a game ({game.message.id}).")
 
         # Return if letter was already guessed
         for i in range(len(LETTERS)):
@@ -106,7 +106,7 @@ class HangmanInput(Modal):
                 legal_expression += ch
         
         game: Game = self.users_in_games[interaction.user.id]
-        self.logger.info(f"{interaction.user.name} has guessed expression \"{expression}\" in a game of Hangman ({game.message.id}).")
+        self.logger.info(f"{interaction.user.name} has guessed expression \"{expression}\" in a game ({game.message.id}).")
 
         # INCORRECT GUESS
         if game.expression.lower() != legal_expression:
@@ -184,4 +184,4 @@ class HangmanAddPlayer(Modal):
         await game.message.edit(embed=game.create_embed())
         await interaction.response.send_message(f"ℹ️ {player} was added to {game.creator.name}'s game of hangman.", delete_after=3)
 
-        self.logger.info(f"{interaction.user.name} has added player {player.name} to {game.creator.name}'s game of Hangman ({game.message.id}).")
+        self.logger.info(f"{interaction.user.name} has added player {player.name} to {game.creator.name}'s game ({game.message.id}).")
