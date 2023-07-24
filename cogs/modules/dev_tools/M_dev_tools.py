@@ -40,12 +40,30 @@ class DevTools(Cog):
         if not await can_use(ctx):
             return
 
-        msg: str = ""
-        for cog in self.client.cogs:
-            msg += cog + "\n"
+        # Collect cog names
+        cogs = [cog for cog in self.client.cogs]
 
-        await ctx.reply(msg)
+        # Get max length of cog name
+        max_len = 0
+        for cog in cogs:
+            if len(cog) > max_len:
+                max_len = len(cog)
 
-    
+        max_len += 1
+
+        # Construct message
+        msg: str = "Currently loaded:\n```"
+        column = 0
+
+        for cog in cogs:
+            msg += cog + " " * (max_len - len(cog))
+
+            if column > 3:
+                column = 0
+                msg += "\n"
+
+        await ctx.reply(msg + "```")
+
+
 def load(client):
     client.add_cog(DevTools(client))

@@ -7,7 +7,7 @@ import config
 
 async def load_cogs_from_directory(client: Bot, logger: logging.Logger, directory: str):
 
-    for dirpath, dirnames, filenames in os.walk(directory):
+    for dirpath, _, filenames in os.walk(directory):
         for filename in filenames:
 
             if filename.endswith(".py") and filename.startswith("M_"):
@@ -23,6 +23,7 @@ async def load_cogs_from_directory(client: Bot, logger: logging.Logger, director
 
 
 async def load_cogs(client: Bot):
+
     # Setup logger
     logger: logging.Logger = logging.getLogger("bot")
     logger.info("Loading cogs.")
