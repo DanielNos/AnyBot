@@ -3,14 +3,6 @@ from nextcord.ext.commands import Cog, Bot, Context, command
 from config import AUTHOR
 
 
-async def can_use(ctx: Context):
-    if ctx.author.id != AUTHOR["id"]:
-        await ctx.reply("❌ You don't have rights! 😅")
-        return False
-    
-    return True
-
-
 class DevTools(Cog):
     def __init__(self, client):
         self.client: Bot = client
@@ -21,7 +13,7 @@ class DevTools(Cog):
     async def eval(self, ctx: Context, expression: str = None):
         
         # Only bot author can use
-        if not await can_use(ctx):
+        if ctx.author.id != AUTHOR["id"]:
             return
 
         # No expression
@@ -37,7 +29,7 @@ class DevTools(Cog):
     async def list_cogs(self, ctx: Context):
         
         # Only bot author can use
-        if not await can_use(ctx):
+        if ctx.author.id != AUTHOR["id"]:
             return
 
         # Collect cog names

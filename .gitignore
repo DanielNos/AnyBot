@@ -1,6 +1,6 @@
 logs
 *.log
 __pycache__
-*.mp3
 modules_data/*
 !modules_data/hangman/
+!modules_data/sound_board/

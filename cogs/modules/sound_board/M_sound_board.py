@@ -1,15 +1,15 @@
 import os, sys
 sys.path.append(os.path.dirname(__file__))
 
-import logging
-from logging import Logger
-from nextcord.ext.commands import Cog, Bot
+from logging import Logger, getLogger
+from nextcord.ext.commands import Cog, Bot, Context, command
 from nextcord import Interaction, Embed, Attachment, slash_command
 from nextcord.ui import View
 from cogs.modules.sound_board.sound_board_view import SoundBoardControls
 from sound_board_manager import SoundBoardManager
 from emoji import is_emoji
-import config
+from config import DEBUG, AUTHOR
+from formatting import get_place
 
 
 EMBED_COLOR: int = 0xBEF436
@@ -20,7 +20,7 @@ class SoundBoard(Cog):
     def __init__(self, client):
         
         self.client: Bot = client
-        self.logger: Logger = logging.getLogger("bot")
+        self.logger: Logger = getLogger("bot")
 
         self.sound_boards = {}
         self.sounds = []
@@ -78,7 +78,7 @@ class SoundBoard(Cog):
         return embed
 
 
-    @slash_command(name="sound_board", description="Opens sound board.", guild_ids=config.DEBUG["test_guilds"])
+    @slash_command(description="Opens sound board.", guild_ids=DEBUG["test_guilds"])
     async def sound_board(self, interaction: Interaction):
         
         # Called outside of guild
@@ -99,7 +99,7 @@ class SoundBoard(Cog):
         self.logger.info(f"{interaction.user.name} has opened a sound board in {get_place(interaction)}.")
 
     
-    @slash_command(name="upload_sound", description="Uploads a sound to sound board.", guild_ids=config.DEBUG["test_guilds"])
+    @slash_command(description="Uploads a sound to sound board.", guild_ids=DEBUG["test_guilds"])
     async def upload_sound(self, interaction:Interaction, sound: Attachment, emoji: str = ""):
         
         # Check if user is allowed to upload
@@ -130,6 +130,18 @@ class SoundBoard(Cog):
         await interaction.response.send_message(f"✅ Successfully uploaded {sound.filename} as `{entry_name}`.\nIt will be usable after the next bot restart.")
 
         self.logger.info(f"{interaction.user.name} has uploaded sound {name} to sound board.")
+
+
+    @command()
+    async def reload_sound_board(self, ctx: Context):
+
+        if ctx.author.id != AUTHOR["id"]:
+            return
+        
+        await ctx.reply("Reloading sounds...")
+
+        self.sounds = []
+        self.load_sounds()
 
 
 def load(client):

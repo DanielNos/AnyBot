@@ -1,7 +1,7 @@
 import os, sys
 sys.path.append(os.path.dirname(__file__))
 
-import logging, json
+import json
 from logging import Logger, getLogger
 from typing import Dict, List, Tuple
 from nextcord.ext.commands import Cog, Bot
@@ -12,7 +12,6 @@ from role_giver_classes import RoleGiver, RoleGiverBlueprint
 from emoji import is_emoji
 from config import DEBUG, BOT
 from formatting import NUMBERS
-
 
 
 def remove_entities(json_obj: Dict[str, Dict[str, Dict[str, Dict[str, int]]]], guilds_to_remove: List[str], channels_to_remove: List[Tuple[str, str]], messages_to_remove: List[Tuple[str, str, str]]):
