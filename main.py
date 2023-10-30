@@ -1,4 +1,4 @@
-import os, nextcord, logging, asyncio
+import os, nextcord, logging, asyncio, atexit
 from importlib import import_module
 from nextcord.ext.commands import Bot
 from logging.config import dictConfig
@@ -52,7 +52,13 @@ async def load_cogs(client: Bot):
     await load_cogs_from_directory(client, logger, "./cogs/modules/")
 
 
+@atexit.register
+def quit():
+    logging.getLogger("bot").info("Shutting down.")
+
+
 if __name__ == "__main__":
+
     # Collect token
     token = os.getenv(f"{BOT['name'].upper()}_DISCORD_API_TOKEN")
     if token is None:
