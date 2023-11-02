@@ -118,12 +118,13 @@ class SoundBoard(Cog):
             return
         
         # Construct file name and button label
+        file_name = sound.filename.replace("_", " ")
         if emoji != "":
-            name = emoji[0] + sound.filename
-            entry_name = emoji[0] + " " + sound.filename[:-4]
+            name = emoji[0] + file_name
+            entry_name = emoji[0] + " " + file_name[:-4]
         else:
-            name = "0" + sound.filename
-            entry_name = sound.filename[:-4]
+            name = "0" + file_name
+            entry_name = file_name[:-4]
         
         # Save sounds
         await sound.save("./modules_data/sound_board/" + name)
