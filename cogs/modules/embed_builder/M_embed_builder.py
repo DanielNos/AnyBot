@@ -10,7 +10,7 @@ from formatting import get_place
 
 
 class EmbedBuilder(Cog):
-    def __init__(self, client):
+    def __init__(self, client: Bot):
         self.client: Bot = client
         self.logger: Logger = logging.getLogger("bot")
 

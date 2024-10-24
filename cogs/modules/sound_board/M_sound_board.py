@@ -17,7 +17,7 @@ EMBED_THUMBNAIL_URL: str = "https://raw.githubusercontent.com/4lt3rnative/nosbot
 
 
 class SoundBoard(Cog):
-    def __init__(self, client):
+    def __init__(self, client: Bot):
         
         self.client: Bot = client
         self.logger: Logger = getLogger("bot")

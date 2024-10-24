@@ -4,7 +4,7 @@ from config import AUTHOR
 
 
 class DevTools(Cog):
-    def __init__(self, client):
+    def __init__(self, client: Bot):
         self.client: Bot = client
         self.logger: Logger = getLogger("bot")
 

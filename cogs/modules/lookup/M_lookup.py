@@ -5,7 +5,7 @@ from config import DEBUG
 
 
 class Lookup(Cog):
-    def __init__(self, client):
+    def __init__(self, client: Bot):
         self.client: Bot = client
         self.logger: Logger = getLogger("bot")
 

@@ -30,7 +30,7 @@ def remove_entities(json_obj: Dict[str, Dict[str, Dict[str, Dict[str, int]]]], g
 
 
 class RoleGivers(Cog):
-    def __init__(self, client):
+    def __init__(self, client: Bot):
         self.client: Bot = client
         self.logger: Logger = getLogger("bot")
 

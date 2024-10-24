@@ -48,7 +48,7 @@ def load_welcome_messages() -> Dict[int, Tuple[bool, str]]:
 
 
 class WelcomeMessage(Cog):
-    def __init__(self, client):
+    def __init__(self, client: Bot):
         self.client: Bot = client
         self.logger: Logger = getLogger("bot")
         
