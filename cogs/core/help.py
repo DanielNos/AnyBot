@@ -25,7 +25,7 @@ def load_help():
                     continue
                 
                 # Create embed with commands
-                embed = Embed(title=f"NosBot Help - {filename[:-5]}", color=config.BOT["color"])
+                embed = Embed(title=f"AnyBot Help - {filename[:-5]}", color=config.BOT["color"])
                 
                 for i in range(0, len(lines), 2):
                     embed.add_field(name=lines[i], value=lines[i+1])

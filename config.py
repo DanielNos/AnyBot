@@ -3,9 +3,9 @@ DEBUG = {
 }
 
 BOT = {
-    "command_prefix": "nos ",
-    "name": "NosBot",
-    "icon": "https://raw.githubusercontent.com/4lt3rnative/nosbot/main/nosbot.png",
+    "command_prefix": "any   ",
+    "name": "AnyBot",
+    "icon": "",
     "color": 0xFBCE9D
 }
 
@@ -27,10 +27,6 @@ LOGGING_CONFIG = {
             "format": "\033[0;97m%(asctime)s   \033[1;96m%(levelname)-6s \033[93m%(name)-15s  \033[0;97m %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S"
         },
-        "chat": {
-            "format": "\033[0;97m%(asctime)s   \033[1;92mCHAT   \033[93m%(name)-15s   \033[0;97m%(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S"
-        }
     },
     "handlers": {
         "console": {
@@ -44,17 +40,6 @@ LOGGING_CONFIG = {
             "filename": "logs/bot.log",
             "formatter": "verbose"
         },
-        "chatConsole": {
-            "level": "INFO",
-            "class": "logging.StreamHandler",
-            "formatter": "chat"
-        },
-        "chatFile": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
-            "filename": "logs/chat.log",
-            "formatter": "chat"
-        },
     },
     "loggers": {
         "bot": {
@@ -64,11 +49,6 @@ LOGGING_CONFIG = {
         },
         "discord": {
             "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": False
-        },
-        "chat": {
-            "handlers": ["chatConsole", "chatFile"],
             "level": "INFO",
             "propagate": False
         },

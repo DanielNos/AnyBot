@@ -9,7 +9,6 @@ class Core(Cog):
     def __init__(self, client):
         self.client: Bot = client
         self.logger: Logger = logging.getLogger("bot")
-        self.chat: Logger = logging.getLogger("chat")
     
     
     @Cog.listener()
@@ -17,8 +16,8 @@ class Core(Cog):
         self.logger.info(f"Logged in as {self.client.user} ({self.client.user.id}).")
 
 
-    @slash_command(name="nosbot", description=f"Shows information about {config.BOT['name']}.", guild_ids=config.DEBUG["test_guilds"])
-    async def nosbot(self, interaction: Interaction):
+    @slash_command(name="anybot", description=f"Shows information about {config.BOT['name']}.", guild_ids=config.DEBUG["test_guilds"])
+    async def anybot(self, interaction: Interaction):
 
         embed: Embed = Embed(title=f"{config.BOT['name']}", color=config.BOT["color"])
         embed.set_thumbnail(url=config.BOT["icon"])
