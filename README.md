@@ -1,6 +1,6 @@
 # AnyBot
 
-AnyBot is a modular Discord bot. It provides utility, moderation tools, games and other. Each module has its own cog. Cogs can be easily removed or added to customize the bot.
+AnyBot is a modular Discord bot that provides utility functions, moderation tools, games, and more. Each feature is organized into a separate module, referred to as a cog. Cogs can be easily added or removed, allowing for customization of the bot’s functionality.
 
 # How to Setup and Run
 
