@@ -2,5 +2,6 @@ logs
 *.log
 __pycache__
 modules_data/*
+venv
 !modules_data/hangman/
 !modules_data/sound_board/

@@ -17,33 +17,6 @@ class Core(Cog):
         self.logger.info(f"Logged in as {self.client.user} ({self.client.user.id}).")
 
 
-    @Cog.listener()
-    async def on_message(self, message: Message):
-        if message.author.id == self.client.user.id:
-            return
-
-        text = ""
-
-        # Log user type
-        if message.author.bot:
-            text += "[bot]"
-
-        text += f"[{message.author.name}]"
-
-        # Log attachments
-        if len(message.attachments) > 0:
-            text += f" [attachments:"
-            
-            for attachment in message.attachments:
-                text += f" ({attachment.filename} : {attachment.url})"
-
-            text += "]"
-
-        text += f" {message.content}"
-
-        self.chat.info(text)
-
-
     @slash_command(name="nosbot", description=f"Shows information about {config.BOT['name']}.", guild_ids=config.DEBUG["test_guilds"])
     async def nosbot(self, interaction: Interaction):
 
